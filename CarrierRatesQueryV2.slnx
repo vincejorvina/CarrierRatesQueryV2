@@ -1,4 +1,7 @@
 <Solution>
+  <Project Path="CarrierRatesQueryV2.Api/CarrierRatesQueryV2.Api.csproj" />
   <Project Path="CarrierRatesQueryV2.AppHost/CarrierRatesQueryV2.AppHost.csproj" />
+  <Project Path="CarrierRatesQueryV2.Data/CarrierRatesQueryV2.Data.csproj" Id="11c4c803-dfac-452a-ba53-83df367e5eaf" />
   <Project Path="CarrierRatesQueryV2.ServiceDefaults/CarrierRatesQueryV2.ServiceDefaults.csproj" />
+  <Project Path="CarrierRatesQueryV2.Tests/CarrierRatesQueryV2.Tests.csproj" Id="41d03956-a989-4458-940a-a690ea61d417" />
 </Solution>

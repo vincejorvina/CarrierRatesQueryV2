@@ -8,4 +8,8 @@
     <UserSecretsId>2b4ac7ef-ccb7-4233-9799-f4489cc2fda4</UserSecretsId>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CarrierRatesQueryV2.Api\CarrierRatesQueryV2.Api.csproj" />
+  </ItemGroup>
+
 </Project>
