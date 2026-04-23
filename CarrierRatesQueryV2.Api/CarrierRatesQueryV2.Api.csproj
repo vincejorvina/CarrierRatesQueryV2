@@ -17,4 +17,8 @@
     <ProjectReference Include="..\CarrierRatesQueryV2.ServiceDefaults\CarrierRatesQueryV2.ServiceDefaults.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\" />
+  </ItemGroup>
+
 </Project>
