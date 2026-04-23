@@ -30,10 +30,6 @@ public static class FastEndpointsServiceExtension
             config.Versioning.PrependToRoute = true;
             config.Versioning.DefaultVersion = 1;
             config.Endpoints.RoutePrefix = "api";
-            config.Endpoints.Configurator = endpoint =>
-            {
-                endpoint.Options(o => o.RequireAuthorization());
-            };
 
             config.Errors.StatusCode = StatusCodes.Status422UnprocessableEntity;
 

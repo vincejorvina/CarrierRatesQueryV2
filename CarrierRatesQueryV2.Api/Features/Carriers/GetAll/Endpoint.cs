@@ -20,7 +20,6 @@ public sealed class Endpoint(AppDbContext appDbContext) : EndpointWithoutRequest
     public override void Configure()
     {
         Get("carriers");
-        AllowAnonymous();
     }
 
     public override async Task HandleAsync(CancellationToken ct)

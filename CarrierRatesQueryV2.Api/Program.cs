@@ -12,6 +12,7 @@ app.SetupFastEndpoints();
 
 app.SeedData();
 
+app.UseExceptionHandler();
 app.UseHttpsRedirection();
 
 await app.RunAsync();
