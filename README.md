@@ -16,7 +16,7 @@ This is a **modernized, production-ready** version of the original Carrier Rates
 - ✅ **Shouldly** - Readable test assertions with fluent syntax
 - ✅ **FluentValidation** - Centralized request validation
 - ✅ **Vertical Slice Architecture** - Organized by feature/domain
-- ✅ **Resilience & Retry** - Polly-based retry policies for carrier APIs
+- ✅ **Resilience & Retry** - Microsoft.Extensions.Http.Resilience (retry + circuit breaker)
 - ✅ **Aspire Integration** - Built-in observability and health checks
 
 ---
@@ -340,7 +340,7 @@ public void Should_Return_Rates_For_Enabled_Carriers()
 
 ## 🎁 Bonus Features
 
-- ✅ **Resilience Patterns**: Polly-based retry with exponential backoff
+- ✅ **Resilience Patterns**: Microsoft.Extensions.Http.Resilience with retry + circuit breaker
 - ✅ **Circuit Breaker**: Automatic failure isolation for carrier APIs
 - ✅ **OpenTelemetry**: Distributed tracing and metrics
 - ✅ **Health Checks**: `/health` endpoint for load balancer integration
@@ -368,7 +368,7 @@ This version modernizes the original submission with the following enhancements:
 - **FluentValidation** centralizes request validation rules
 - **Vertical Slice Architecture** with deep feature folders: `/Features/<Category>/<SpecificFunction>/`
 - **Core Project** separates business logic (services, strategies, adapters) from API endpoints
-- **Polly-based Retry** adds resilience to carrier API calls
+- **Http Resilience** adds retry + circuit breaker to carrier API calls
 - **OpenTelemetry** enables full observability and distributed tracing
 
 ---
