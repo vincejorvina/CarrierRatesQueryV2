@@ -10,9 +10,12 @@
     <PackageReference Include="FastEndpoints" Version="8.1.0" />
     <PackageReference Include="FastEndpoints.Swagger" Version="8.1.0" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="Refit" Version="8.0.0" />
+    <PackageReference Include="Refit.HttpClientFactory" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CarrierRatesQueryV2.Core\CarrierRatesQueryV2.Core.csproj" />
     <ProjectReference Include="..\CarrierRatesQueryV2.Data\CarrierRatesQueryV2.Data.csproj" />
     <ProjectReference Include="..\CarrierRatesQueryV2.ServiceDefaults\CarrierRatesQueryV2.ServiceDefaults.csproj" />
   </ItemGroup>
