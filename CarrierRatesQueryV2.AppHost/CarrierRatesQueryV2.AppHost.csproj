@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CarrierRatesQueryV2.Api\CarrierRatesQueryV2.Api.csproj" />
+    <ProjectReference Include="..\CarrierRatesQueryV2.MockFedEx\CarrierRatesQueryV2.MockFedEx.csproj" />
   </ItemGroup>
 
 </Project>

@@ -19,12 +19,12 @@ public class DataSeeder(AppDbContext context)
             IsEnabled = true,
             CreatedAtUtc = DateTime.UtcNow,
             Endpoints = [ new CarrierEndpoint
-            {
-                Id = Guid.NewGuid(),
-                Operation = "Rates",
-                Endpoint = "http://localhost:5133/api/fedex/rates"
-            }]
-        };
+             {
+                 Id = Guid.NewGuid(),
+                 Operation = "Rates",
+                 Endpoint = "http://carrierratesqueryv2-mockfedex/api/fedex/rates"
+             }]
+         };
 
         var dhlCarrier = new Carrier
         {
