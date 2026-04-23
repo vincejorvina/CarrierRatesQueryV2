@@ -27,7 +27,7 @@ This is a **modernized, production-ready** version of the original Carrier Rates
 - **FastEndpoints** - Modern, testable API framework (v8.1.0)
 - **Refit** - Type-safe HTTP client generation (v6.0.0)
 - **FluentValidation** - Centralized request validation (v12.1.1)
-- **xUnit + Shouldly + Moq** - Testing with readable assertions
+- **xUnit + Shouldly** - Testing with readable assertions
 - **EF Core InMemory** - In-memory database (v9.0.15)
 - **Microsoft.Extensions.Http.Resilience** - Retry & circuit breaker (v10.1.0)
 - **OpenTelemetry** - Observability & tracing (v1.14.0)
@@ -37,14 +37,26 @@ This is a **modernized, production-ready** version of the original Carrier Rates
 
 ## 📁 Solution Structure
 
-The solution is organized using vertical slice architecture:
+The solution is organized using vertical slice architecture with a Core project pattern:
 
 **Main API Service:**
-- `CarrierRatesQueryV2.Api/` - Main API with FastEndpoints controllers
-  - `Controllers/` - FastEndpoint handlers for rates, carriers, and disable requests
-  - `Domain/` - Domain models and business rules
-  - `Application/` - Use cases, DTOs, and application logic
+- `CarrierRatesQueryV2.Api/` - Main API with FastEndpoints
+  - `Features/` - Vertical slices organized as `/Features/<Category>/<SpecificFunction>/`
+    - Example: `/Features/Carriers/AddCarrier/` contains:
+      - `AddCarrierEndpoint.cs` - Endpoint definition with DTOs, validators, and logic
+      - `AddCarrierEndpoint.http` - Example request file
+    - Categories include: `Rates`, `Carriers`, `DisableRequests`
   - `Infrastructure/` - HTTP clients, persistence, and external services
+
+**Core Business Logic Library:**
+- `CarrierRatesQueryV2.Core/` - Business logic and domain models
+  - `Services/` - Business logic services (RateQueryService, CarrierManagementService, DisableRequestService)
+  - `Interfaces/` - Service interfaces, strategy and adapter interfaces
+  - `Strategies/` - Strategy pattern implementations (FedEx, UPS, DHL)
+  - `Adapters/` - Adapter pattern implementations for carrier responses
+  - `DTOs/` - Data transfer objects and request models
+  - `Exceptions/` - Custom exception types
+  - Can be shared across API and test projects
 
 **Data Layer:**
 - `CarrierRatesQueryV2.Data/` - EF Core entities and in-memory database
@@ -61,7 +73,10 @@ The solution is organized using vertical slice architecture:
 - `CarrierRatesQueryV2.MockDhl/` - Mock DHL API service
 
 **Testing:**
-- `CarrierRatesQueryV2.Tests/` - Unit and integration tests organized by feature
+- `CarrierRatesQueryV2.Tests/` - Unit and integration tests
+  - `Core/` - Tests for business logic, strategies, and adapters
+  - `Api/` - Tests for API features and endpoints
+  - `MockCarrierServices/` - Tests for mock carrier APIs
 
 ---
 
@@ -75,7 +90,7 @@ The solution is organized using vertical slice architecture:
 
 **Open/Closed Principle:** The system is designed to accept new carriers through extension points—implement the strategy and adapter interfaces without modifying existing code.
 
-**CQRS Pattern:** FastEndpoints implements Command/Query pattern to separate read and write operations, improving testability and maintainability.
+**Vertical Slice Architecture:** Each feature is self-contained with its own endpoint, handler, and logic, making it easy to test and maintain.
 
 **Dependency Injection:** Full DI integration using Microsoft.Extensions.DependencyInjection for loose coupling and easy unit testing.
 
@@ -83,10 +98,11 @@ The solution is organized using vertical slice architecture:
 
 1. Client sends rate query to API
 2. FastEndpoint validates and routes the request
-3. RateQueryService checks cache first (2-minute TTL)
-4. If cache miss, Strategy pattern selects appropriate carrier
-5. Adapter normalizes carrier-specific response
-6. Response is cached and returned to client
+3. Feature endpoint invokes Core service (business logic)
+4. Service checks cache first (2-minute TTL)
+5. If cache miss, Strategy pattern selects appropriate carrier
+6. Adapter normalizes carrier-specific response
+7. Response is cached and returned to client
 
 ### Business Rules
 
@@ -160,10 +176,11 @@ Once running, access the API:
 
 - `/swagger` - Swagger/OpenAPI documentation
 - `/health` - Health check (development only)
-- `/api/rates` - POST to query shipping rates
-- `/api/carriers` - GET/POST/PUT/DELETE for carrier management
-- `/api/carriers/{id}/endpoints` - GET/POST/PUT/DELETE for endpoint management
-- `/api/disable-requests` - GET/POST for disable request workflow
+- `/api/rates` - POST to query shipping rates from all enabled carriers
+- `/api/carriers` - GET/POST/PUT/DELETE for carrier CRUD operations
+- `/api/carriers/{id}/endpoints` - GET/POST/PUT/DELETE for carrier endpoint management
+- `/api/carriers/{id}/disable` - POST to disable a carrier (admin approval workflow)
+- `/api/disable-requests` - GET/POST for disable request approval workflow
 
 ---
 
@@ -263,11 +280,10 @@ dotnet test --collect:"XPlat Code Coverage"
 
 ### Test Categories
 
-- **Services** (`Services/*.cs`) - Test business logic
-- **Domain** (`Domain/*.cs`) - Test entity logic
-- **Integration** (`Integration/*.cs`) - Test API endpoints
-- **Adapters** (`Adapters/*.cs`) - Test response normalization
-- **Strategies** (`Strategies/*.cs`) - Test carrier selection
+- **Core Tests** (`Core/`) - Tests for business logic, strategies, and adapters
+- **API Tests** (`Api/`) - Tests for API features and endpoints
+- **Integration Tests** (`Integration/`) - End-to-end API integration tests
+- **Mock Carrier Tests** (`MockCarrierServices/`) - Tests for mock carrier APIs
 
 ### Example Test (Shouldly Syntax)
 
@@ -305,13 +321,18 @@ public void Should_Return_Rates_For_Enabled_Carriers()
 <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
 ```
 
+### Core Project (`CarrierRatesQueryV2.Core.csproj`)
+
+```xml
+<PackageReference Include="FluentValidation" Version="12.1.1" />
+```
+
 ### Test Project (`CarrierRatesQueryV2.Tests.csproj`)
 
 ```xml
 <PackageReference Include="xunit" Version="2.9.3" />
 <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
 <PackageReference Include="Shouldly" Version="4.2.1" />
-<PackageReference Include="Moq" Version="4.20.72" />
 <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.15" />
 ```
 
@@ -345,7 +366,8 @@ This version modernizes the original submission with the following enhancements:
 - **Refit** provides type-safe HTTP client generation
 - **Shouldly** offers readable, fluent test assertions
 - **FluentValidation** centralizes request validation rules
-- **Vertical Slice Architecture** organizes code by feature/domain
+- **Vertical Slice Architecture** with deep feature folders: `/Features/<Category>/<SpecificFunction>/`
+- **Core Project** separates business logic (services, strategies, adapters) from API endpoints
 - **Polly-based Retry** adds resilience to carrier API calls
 - **OpenTelemetry** enables full observability and distributed tracing
 
