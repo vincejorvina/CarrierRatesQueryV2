@@ -1,5 +1,4 @@
 <Solution>
   <Project Path="CarrierRatesQueryV2.AppHost/CarrierRatesQueryV2.AppHost.csproj" />
   <Project Path="CarrierRatesQueryV2.ServiceDefaults/CarrierRatesQueryV2.ServiceDefaults.csproj" />
-  <Project Path="CarrierRatesQueryV2/CarrierRatesQueryV2.csproj" />
 </Solution>
