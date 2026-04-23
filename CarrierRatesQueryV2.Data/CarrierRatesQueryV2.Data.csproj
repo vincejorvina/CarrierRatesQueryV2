@@ -12,4 +12,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.15" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CarrierRatesQueryV2.Core\CarrierRatesQueryV2.Core.csproj" />
+  </ItemGroup>
+
 </Project>

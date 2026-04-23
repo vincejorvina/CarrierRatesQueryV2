@@ -1,0 +1,21 @@
+using CarrierRatesQueryV2.Core.Interfaces.Rates;
+using CarrierRatesQueryV2.Core.Rates.Adapters;
+using CarrierRatesQueryV2.Core.Rates.Clients;
+using CarrierRatesQueryV2.Core.Rates.Strategies;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace CarrierRatesQueryV2.Core;
+
+public static class DependencyInjection
+{
+    public static IServiceCollection AddCoreServices(this IServiceCollection services)
+    {
+        services.AddScoped<ICarrierRateStrategyResolver, CarrierRateStrategyResolver>();
+
+        services.AddScoped<ICarrierRateStrategy, FedExRateStrategy>();
+
+        services.AddScoped<ICarrierRateAdapter<MockFedExRateResponse>, FedExRateAdapter>();
+
+        return services;
+    }
+}
