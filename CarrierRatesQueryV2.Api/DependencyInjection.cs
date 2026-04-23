@@ -1,4 +1,5 @@
 ﻿using CarrierRatesQueryV2.Api.Services;
+using CarrierRatesQueryV2.Api.Infrastructure;
 using CarrierRatesQueryV2.Api.Infrastructure.Rates.Clients;
 using CarrierRatesQueryV2.Core;
 using CarrierRatesQueryV2.Core.Interfaces.Rates.Clients;
@@ -29,5 +30,7 @@ static void ResolveDependencies(this IServiceCollection services)
 
         services.AddHttpClient();
         services.AddScoped<IMockFedExRatesClient, FedExRefitClient>();
+
+        services.AddScoped<IRequestRoleAccessor, RequestRoleAccessor>();
     }
 }

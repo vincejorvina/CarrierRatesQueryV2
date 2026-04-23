@@ -1,11 +1,13 @@
+using CarrierRatesQueryV2.Api.Infrastructure;
 using CarrierRatesQueryV2.Data;
-using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.DisableRequests.GetByCarrier;
 
-public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, List<Response>>
+public sealed class Endpoint(
+    AppDbContext appDbContext,
+    IRequestRoleAccessor requestRoleAccessor) : Endpoint<Request, List<Response>>
 {
     public override void Configure()
     {
@@ -14,6 +16,8 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, List
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
+        _ = requestRoleAccessor.GetRequiredRole();
+
         var carrierExists = await appDbContext.Carriers.AnyAsync(c => c.Id == req.CarrierId, ct);
         if (!carrierExists)
         {

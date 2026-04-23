@@ -1,3 +1,4 @@
+using CarrierRatesQueryV2.Api.Infrastructure;
 using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
@@ -6,7 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.DisableRequests.Create;
 
-public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Response>
+public sealed class Endpoint(
+    AppDbContext appDbContext,
+    IRequestRoleAccessor requestRoleAccessor) : Endpoint<Request, Response>
 {
     public override void Configure()
     {
@@ -15,6 +18,9 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
+        _ = requestRoleAccessor.GetRequiredRole();
+        var requestedBy = requestRoleAccessor.GetRequestedBy();
+
         var carrierExists = await appDbContext.Carriers.AnyAsync(c => c.Id == req.CarrierId, ct);
         if (!carrierExists)
         {
@@ -26,7 +32,7 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
         {
             Id = Guid.NewGuid(),
             CarrierId = req.CarrierId,
-            RequestedBy = req.RequestedBy,
+            RequestedBy = requestedBy,
             Reason = req.Reason,
             Status = DisableRequestStatus.Pending,
             RequestedAtUtc = DateTime.UtcNow
@@ -50,13 +56,12 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
     }
 }
 
-public sealed record Request(Guid CarrierId, string RequestedBy, string Reason);
+public sealed record Request(Guid CarrierId, string Reason);
 
 public sealed class Validator : Validator<Request>
 {
     public Validator()
     {
-        RuleFor(x => x.RequestedBy).NotEmpty();
         RuleFor(x => x.Reason).NotEmpty();
     }
 }

@@ -1,11 +1,13 @@
+using CarrierRatesQueryV2.Api.Infrastructure;
 using CarrierRatesQueryV2.Data;
-using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.DisableRequests.GetAll;
 
-public sealed class Endpoint(AppDbContext appDbContext) : EndpointWithoutRequest<List<Response>>
+public sealed class Endpoint(
+    AppDbContext appDbContext,
+    IRequestRoleAccessor requestRoleAccessor) : EndpointWithoutRequest<List<Response>>
 {
     public override void Configure()
     {
@@ -14,6 +16,8 @@ public sealed class Endpoint(AppDbContext appDbContext) : EndpointWithoutRequest
 
     public override async Task HandleAsync(CancellationToken ct)
     {
+        _ = requestRoleAccessor.GetRequiredRole();
+
         var requests = await appDbContext.DisableRequests
             .OrderByDescending(r => r.RequestedAtUtc)
             .ToListAsync(ct);

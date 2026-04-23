@@ -1,3 +1,4 @@
+using CarrierRatesQueryV2.Api.Infrastructure;
 using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
@@ -5,7 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.DisableRequests.Reject;
 
-public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Response>
+public sealed class Endpoint(
+    AppDbContext appDbContext,
+    IRequestRoleAccessor requestRoleAccessor) : Endpoint<Request, Response>
 {
     public override void Configure()
     {
@@ -14,6 +17,15 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
+        var role = requestRoleAccessor.GetRequiredRole();
+        if (role != RequestRole.Admin)
+        {
+            ThrowError("Only administrators can reject disable requests.", 403);
+            return;
+        }
+
+        var processedBy = requestRoleAccessor.GetRequestedBy();
+
         var disableRequest = await appDbContext.DisableRequests
             .FirstOrDefaultAsync(r => r.Id == req.DisableRequestId, ct);
 
@@ -30,7 +42,7 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
         }
 
         disableRequest.Status = DisableRequestStatus.Rejected;
-        disableRequest.ProcessedBy = req.ProcessedBy;
+        disableRequest.ProcessedBy = processedBy;
         disableRequest.ProcessedAtUtc = DateTime.UtcNow;
 
         await appDbContext.SaveChangesAsync(ct);
@@ -50,7 +62,7 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
     }
 }
 
-public sealed record Request(Guid DisableRequestId, string ProcessedBy);
+public sealed record Request(Guid DisableRequestId);
 
 public sealed record Response(
     Guid Id,

@@ -1,3 +1,4 @@
+using CarrierRatesQueryV2.Api.Infrastructure;
 using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
@@ -6,7 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.Carriers.Disable;
 
-public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Response>
+public sealed class Endpoint(
+    AppDbContext appDbContext,
+    IRequestRoleAccessor requestRoleAccessor) : Endpoint<Request, Response>
 {
     public override void Configure()
     {
@@ -15,6 +18,13 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
+        var role = requestRoleAccessor.GetRequiredRole();
+        if (role != RequestRole.Admin)
+        {
+            ThrowError("Only administrators can disable carriers directly. Use disable-request flow for regular users.", 403);
+            return;
+        }
+
         var carrier = await appDbContext.Carriers
             .Include(c => c.Endpoints)
             .FirstOrDefaultAsync(c => c.Id == req.Id, ct);
