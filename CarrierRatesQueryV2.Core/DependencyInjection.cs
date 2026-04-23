@@ -1,4 +1,5 @@
 using CarrierRatesQueryV2.Core.Interfaces.Rates;
+using CarrierRatesQueryV2.Core.Rates;
 using CarrierRatesQueryV2.Core.Rates.Adapters;
 using CarrierRatesQueryV2.Core.Rates.Clients;
 using CarrierRatesQueryV2.Core.Rates.Strategies;
@@ -15,6 +16,8 @@ public static class DependencyInjection
         services.AddScoped<ICarrierRateStrategy, FedExRateStrategy>();
 
         services.AddScoped<ICarrierRateAdapter<MockFedExRateResponse>, FedExRateAdapter>();
+
+        services.AddScoped<IRateCache, MemoryRateCache>();
 
         return services;
     }

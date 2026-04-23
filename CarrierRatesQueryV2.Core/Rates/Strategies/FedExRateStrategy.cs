@@ -1,18 +1,26 @@
 using CarrierRatesQueryV2.Core.Contracts.Rates;
 using CarrierRatesQueryV2.Core.Interfaces.Rates;
 using CarrierRatesQueryV2.Core.Interfaces.Rates.Clients;
+using CarrierRatesQueryV2.Core.Rates;
 using CarrierRatesQueryV2.Core.Rates.Clients;
 
 namespace CarrierRatesQueryV2.Core.Rates.Strategies;
 
 public sealed class FedExRateStrategy(
     IMockFedExRatesClient mockFedExRatesClient,
-    ICarrierRateAdapter<MockFedExRateResponse> fedExRateAdapter) : ICarrierRateStrategy
+    ICarrierRateAdapter<MockFedExRateResponse> fedExRateAdapter,
+    IRateCache rateCache) : ICarrierRateStrategy
 {
     public string CarrierSlug => "fedex";
 
     public async Task<ShippingRateQuote?> TryGetRatesAsync(CarrierContext carrier, RateQuery query, CancellationToken cancellationToken)
     {
+        var cached = await rateCache.GetAsync(carrier, query, cancellationToken);
+        if (cached is not null)
+        {
+            return cached;
+        }
+
         var endpoint = carrier.Endpoints
             .FirstOrDefault(x => x.Operation.Equals("Rates", StringComparison.OrdinalIgnoreCase));
 
@@ -30,6 +38,10 @@ public sealed class FedExRateStrategy(
                     query.Package.Dimensions.Height)));
 
         var response = await mockFedExRatesClient.GetRatesAsync(endpoint.Endpoint, fedExRequest, cancellationToken);
-        return fedExRateAdapter.Adapt(response);
+        var quote = fedExRateAdapter.Adapt(response);
+
+        await rateCache.SetAsync(carrier, query, quote, cancellationToken);
+
+        return quote;
     }
 }
