@@ -3,7 +3,7 @@ using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
-namespace CarrierRatesQueryV2.Api.Features.Carriers.GetCarrierById;
+namespace CarrierRatesQueryV2.Api.Features.Carriers.GetById;
 
 public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Response>
 {

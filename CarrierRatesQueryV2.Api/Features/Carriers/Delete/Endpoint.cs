@@ -2,7 +2,7 @@ using CarrierRatesQueryV2.Data;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
-namespace CarrierRatesQueryV2.Api.Features.Carriers.DeleteCarrier;
+namespace CarrierRatesQueryV2.Api.Features.Carriers.Delete;
 
 public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
 {

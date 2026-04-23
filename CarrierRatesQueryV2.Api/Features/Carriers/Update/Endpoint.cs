@@ -1,11 +1,9 @@
 using CarrierRatesQueryV2.Data;
-using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using static FastEndpoints.Ep;
 
-namespace CarrierRatesQueryV2.Api.Features.Carriers.UpdateCarrier;
+namespace CarrierRatesQueryV2.Api.Features.Carriers.Update;
 
 public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
 {

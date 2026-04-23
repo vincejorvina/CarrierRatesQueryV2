@@ -3,9 +3,9 @@ using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using GetCarrierByIdEndpoint = CarrierRatesQueryV2.Api.Features.Carriers.GetCarrierById.Endpoint;
+using GetCarrierByIdEndpoint = CarrierRatesQueryV2.Api.Features.Carriers.GetById.Endpoint;
 
-namespace CarrierRatesQueryV2.Api.Features.Carriers.AddCarrier;
+namespace CarrierRatesQueryV2.Api.Features.Carriers.Add;
 
 public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
 {
