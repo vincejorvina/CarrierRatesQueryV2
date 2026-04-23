@@ -4,14 +4,12 @@ using CarrierRatesQueryV2.Data;
 using FastEndpoints;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace CarrierRatesQueryV2.Api.Features.Rates.QueryAll;
 
 public sealed class Endpoint(
     AppDbContext appDbContext,
-    ICarrierRateStrategyResolver carrierRateStrategyResolver,
-    ILogger<Endpoint> logger) : Endpoint<Request, List<RateQuoteResponse>>
+    ICarrierRateStrategyResolver carrierRateStrategyResolver) : Endpoint<Request, List<RateQuoteResponse>>
 {
     public override void Configure()
     {
@@ -21,23 +19,17 @@ public sealed class Endpoint(
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        logger.LogInformation("Starting rate query request");
-
         var carriers = await appDbContext.Carriers
             .Include(x => x.Endpoints)
             .Where(x => x.IsEnabled)
             .OrderBy(x => x.Name)
             .ToListAsync(ct);
 
-        logger.LogInformation("Found {Count} enabled carriers", carriers.Count);
-
         var query = req.ToRateQuery();
         var results = new List<RateQuoteResponse>();
 
         foreach (var carrier in carriers)
         {
-            logger.LogInformation("Processing carrier: {Carrier}", carrier.Name);
-
             var carrierContext = new CarrierContext(
                 Id: carrier.Id,
                 Name: carrier.Name,
@@ -49,31 +41,18 @@ public sealed class Endpoint(
 
             if (!carrierRateStrategyResolver.TryResolve(carrierContext.Slug, out var strategy))
             {
-                logger.LogWarning("No strategy found for carrier: {Carrier}", carrier.Name);
                 continue;
             }
 
-            logger.LogInformation("Resolved strategy for {Carrier}, calling mock API", carrier.Name);
-
-            try
+            var quote = await strategy.TryGetRatesAsync(carrierContext, query, ct);
+            if (quote is null)
             {
-                var quote = await strategy.TryGetRatesAsync(carrierContext, query, ct);
-                if (quote is null)
-                {
-                    logger.LogWarning("No quote returned for carrier: {Carrier}", carrier.Name);
-                    continue;
-                }
+                continue;
+            }
 
-                logger.LogInformation("Got quote from {Carrier} with {OptionCount} options", carrier.Name, quote.RateOptions.Count);
-                results.Add(RateQuoteResponse.FromQuote(quote));
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error fetching rates from {Carrier}", carrier.Name);
-            }
+            results.Add(RateQuoteResponse.FromQuote(quote));
         }
 
-        logger.LogInformation("Returning {Count} rate quotes", results.Count);
         await Send.OkAsync(results, ct);
     }
 }
