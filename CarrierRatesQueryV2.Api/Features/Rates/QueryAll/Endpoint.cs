@@ -35,9 +35,7 @@ public sealed class Endpoint(
                 Name: carrier.Name,
                 Slug: carrier.Slug,
                 UpdatedAtUtc: carrier.UpdatedAtUtc,
-                Endpoints: carrier.Endpoints
-                    .Select(x => new CarrierEndpointConfig(x.Operation, x.Endpoint))
-                    .ToList());
+                Endpoints: [.. carrier.Endpoints.Select(x => new CarrierEndpointConfig(x.Operation, x.Endpoint))]);
 
             if (!carrierRateStrategyResolver.TryResolve(carrierContext.Slug, out var strategy))
             {
@@ -106,12 +104,11 @@ public sealed record RateQuoteResponse(string Carrier, IReadOnlyList<RateOptionR
     {
         return new RateQuoteResponse(
             quote.Carrier,
-            quote.RateOptions
+            [.. quote.RateOptions
                 .Select(x => new RateOptionResponse(
                     x.ServiceName,
                     x.EstimatedDelivery,
-                    new MoneyResponse(x.Price.Amount, x.Price.Currency)))
-                .ToList());
+                    new MoneyResponse(x.Price.Amount, x.Price.Currency)))]);
     }
 }
 
