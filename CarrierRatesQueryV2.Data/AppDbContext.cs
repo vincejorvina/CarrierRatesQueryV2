@@ -12,6 +12,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<CarrierDisableAudit> CarrierDisableAudits => Set<CarrierDisableAudit>();
     public DbSet<CarrierFinancialSettlement> CarrierFinancialSettlements => Set<CarrierFinancialSettlement>();
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Carrier>(entity =>
