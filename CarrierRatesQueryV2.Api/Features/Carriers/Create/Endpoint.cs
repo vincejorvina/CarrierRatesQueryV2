@@ -44,8 +44,11 @@ public sealed record Response(
 
 public sealed class Validator : Validator<Request>
 {
-    public Validator()
+    private readonly AppDbContext _db;
+    public Validator(AppDbContext db)
     {
+        _db = db;
+
         RuleFor(r => r.Name)
             .NotEmpty()
             .WithMessage("Name is required.")
@@ -57,8 +60,7 @@ public sealed class Validator : Validator<Request>
 
     private async Task<bool> BeUniqueName(string name, CancellationToken ct)
     {
-        var appDbContext = Resolve<AppDbContext>();
-        var exists = await appDbContext.Carriers.AnyAsync(r => r.Name == name, ct);
+        var exists = await _db.Carriers.AnyAsync(r => r.Name == name, ct);
         return !exists;
     }
 }
