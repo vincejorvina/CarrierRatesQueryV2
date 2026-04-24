@@ -4,7 +4,7 @@ using FastEndpoints;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
-namespace CarrierRatesQueryV2.Api.Features.Carriers.Add;
+namespace CarrierRatesQueryV2.Api.Features.Carriers.Create;
 
 public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Response>
 {

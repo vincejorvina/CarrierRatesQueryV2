@@ -42,9 +42,9 @@ The solution is organized using vertical slice architecture with a Core project 
 **Main API Service:**
 - `CarrierRatesQueryV2.Api/` - Main API with FastEndpoints
   - `Features/` - Vertical slices organized as `/Features/<Category>/<SpecificFunction>/`
-    - Example: `/Features/Carriers/AddCarrier/` contains:
-      - `AddCarrierEndpoint.cs` - Endpoint definition with DTOs, validators, and logic
-      - `AddCarrierEndpoint.http` - Example request file
+    - Example: `/Features/Carriers/Create/` contains:
+      - `Endpoint.cs` - Endpoint definition with DTOs, validators, and logic
+      - `Endpoint.http` - Example request file
     - Categories include: `Rates`, `Carriers`, `DisableRequests`
   - `Infrastructure/` - HTTP clients, persistence, and external services
 
