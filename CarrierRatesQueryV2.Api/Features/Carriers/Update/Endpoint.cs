@@ -62,18 +62,22 @@ public sealed record Request(Guid Id, string? Name, bool? IsEnabled);
 
 public sealed class Validator : Validator<Request>
 {
-    public Validator()
+    private readonly AppDbContext _db;
+
+    public Validator(AppDbContext db)
     {
+        _db = db;
+
         RuleFor(r => r.Name)
             .MaximumLength(100)
             .WithMessage("Name must be less than 100 characters.")
             .MustAsync(BeUniqueName)
             .WithMessage("Name must be unique.");
     }
+
     private async Task<bool> BeUniqueName(Request req, string name, CancellationToken ct)
     {
-        var appDbContext = Resolve<AppDbContext>();
-        var exists = await appDbContext.Carriers.AnyAsync(r => r.Name == name && r.Id != req.Id, ct);
+        var exists = await _db.Carriers.AnyAsync(r => r.Name == name && r.Id != req.Id, ct);
         return !exists;
     }
 }
