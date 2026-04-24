@@ -33,10 +33,8 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
         appDbContext.CarrierEndpoints.Add(endpoint);
         await appDbContext.SaveChangesAsync(ct);
 
-        Response = new Response(endpoint.Id, endpoint.CarrierId, endpoint.Operation, endpoint.Endpoint);
-        await Send.CreatedAtAsync<GetById.Endpoint>(
-            new { carrierId = endpoint.CarrierId, endpointId = endpoint.Id },
-            Response, cancellation: ct);
+        var response = new Response(endpoint.Id, endpoint.CarrierId, endpoint.Operation, endpoint.Endpoint);
+        await Send.ResponseAsync(response, 201, ct);
     }
 }
 

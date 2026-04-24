@@ -3,11 +3,10 @@ using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using GetCarrierByIdEndpoint = CarrierRatesQueryV2.Api.Features.Carriers.GetById.Endpoint;
 
 namespace CarrierRatesQueryV2.Api.Features.Carriers.Add;
 
-public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
+public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Response>
 {
     public override void Configure()
     {
@@ -28,13 +27,20 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
         appDbContext.Carriers.Add(carrier);
         await appDbContext.SaveChangesAsync(ct);
 
-        await Send.CreatedAtAsync<GetCarrierByIdEndpoint>(
-            routeValues: new { id = carrier.Id },
-            cancellation: ct);
+        var response = new Response(carrier.Id, carrier.Name, carrier.Slug, carrier.IsEnabled, carrier.CreatedAtUtc);
+        await Send.ResponseAsync(response, 201, ct);
     }
 }
 
 public sealed record Request(string Name, bool IsEnabled);
+
+public sealed record Response(
+    Guid Id,
+    string Name,
+    string Slug,
+    bool IsEnabled,
+    DateTime CreatedAtUtc
+);
 
 public sealed class Validator : Validator<Request>
 {

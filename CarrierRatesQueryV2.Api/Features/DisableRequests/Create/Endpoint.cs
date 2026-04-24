@@ -41,7 +41,7 @@ public sealed class Endpoint(
         appDbContext.DisableRequests.Add(disableRequest);
         await appDbContext.SaveChangesAsync(ct);
 
-        Response = new Response(
+        var response = new Response(
             disableRequest.Id,
             disableRequest.CarrierId,
             disableRequest.RequestedBy,
@@ -51,8 +51,7 @@ public sealed class Endpoint(
             disableRequest.ProcessedBy,
             disableRequest.ProcessedAtUtc
         );
-
-        await Send.CreatedAtAsync($"/api/v1/carriers/{disableRequest.CarrierId}/disable-requests", Response);
+        await Send.ResponseAsync(response, 201, ct);
     }
 }
 
