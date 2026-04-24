@@ -32,5 +32,7 @@ static void ResolveDependencies(this IServiceCollection services)
         services.AddScoped<IMockFedExRatesClient, FedExRefitClient>();
 
         services.AddScoped<IRequestRoleAccessor, RequestRoleAccessor>();
+
+        services.AddScoped<ICarrierManagementService, CarrierManagementService>();
     }
 }

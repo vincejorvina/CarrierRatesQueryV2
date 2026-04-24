@@ -48,15 +48,16 @@ public class DisableCarrierHandlerTests
 
         var roleAccessor = Substitute.For<IRequestRoleAccessor>();
         roleAccessor.GetRequiredRole().Returns(RequestRole.Admin);
-        
+        roleAccessor.GetRequestedBy().Returns("test-admin");
+
         var endpoint = CreateEndpoint(db, roleAccessor);
         var request = new Request(carrierId, "Test reason");
 
         await endpoint.HandleAsync(request, CancellationToken.None);
 
-        endpoint.Response.ShouldNotBeNull();
-        endpoint.Response.Id.ShouldBe(carrierId);
-        endpoint.Response.IsEnabled.ShouldBe(false);
+        var carrier = await db.Carriers.FirstOrDefaultAsync(c => c.Id == carrierId);
+        carrier.ShouldNotBeNull();
+        carrier.IsEnabled.ShouldBe(false);
     }
 
     [Fact]

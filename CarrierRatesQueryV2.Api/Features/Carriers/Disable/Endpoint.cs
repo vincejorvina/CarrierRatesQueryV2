@@ -1,5 +1,6 @@
 using CarrierRatesQueryV2.Api.Infrastructure;
 using CarrierRatesQueryV2.Data;
+using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
 using FluentValidation;
