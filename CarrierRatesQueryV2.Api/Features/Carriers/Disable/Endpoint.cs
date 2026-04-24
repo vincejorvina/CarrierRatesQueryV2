@@ -1,6 +1,5 @@
 using CarrierRatesQueryV2.Api.Infrastructure;
 using CarrierRatesQueryV2.Data;
-using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
 using FluentValidation;
@@ -45,24 +44,6 @@ public sealed class Endpoint(
             if (enabledCount <= 1)
             {
                 ThrowError("Cannot disable the only enabled carrier", 409);
-                return;
-            }
-
-            var hasPendingShipments = await appDbContext.Shipments
-                .AnyAsync(s => s.CarrierId == carrier.Id && s.Status == ShipmentStatus.Pending, ct);
-
-            if (hasPendingShipments)
-            {
-                ThrowError("Cannot disable carrier with pending shipments", 409);
-                return;
-            }
-
-            var hasPendingSettlements = await appDbContext.CarrierFinancialSettlements
-                .AnyAsync(s => s.CarrierId == carrier.Id && s.Status == CarrierFinancialSettlementStatus.Pending, ct);
-
-            if (hasPendingSettlements)
-            {
-                ThrowError("Cannot disable carrier with pending settlements", 409);
                 return;
             }
 
