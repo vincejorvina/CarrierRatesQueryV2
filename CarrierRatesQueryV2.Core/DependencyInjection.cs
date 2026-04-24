@@ -14,8 +14,12 @@ public static class DependencyInjection
         services.AddScoped<ICarrierRateStrategyResolver, CarrierRateStrategyResolver>();
 
         services.AddScoped<ICarrierRateStrategy, FedExRateStrategy>();
+        services.AddScoped<ICarrierRateStrategy, DhlRateStrategy>();
+        services.AddScoped<ICarrierRateStrategy, UpsRateStrategy>();
 
         services.AddScoped<ICarrierRateAdapter<MockFedExRateResponse>, FedExRateAdapter>();
+        services.AddScoped<ICarrierRateAdapter<MockDhlRateResponse>, DhlRateAdapter>();
+        services.AddScoped<ICarrierRateAdapter<MockUpsRateResponse>, UpsRateAdapter>();
 
         services.AddScoped<IRateCache, MemoryRateCache>();
 

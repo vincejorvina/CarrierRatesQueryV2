@@ -30,6 +30,8 @@ static void ResolveDependencies(this IServiceCollection services)
 
         services.AddHttpClient();
         services.AddScoped<IMockFedExRatesClient, FedExRefitClient>();
+        services.AddScoped<IMockDhlRatesClient, DhlRefitClient>();
+        services.AddScoped<IMockUpsRatesClient, UpsRefitClient>();
 
         services.AddScoped<IRequestRoleAccessor, RequestRoleAccessor>();
 
