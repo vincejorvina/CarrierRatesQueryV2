@@ -38,15 +38,6 @@ public sealed class Endpoint(
 
         if (carrier.IsEnabled)
         {
-            var enabledCount = await appDbContext.Carriers
-                .CountAsync(c => c.IsEnabled, ct);
-
-            if (enabledCount <= 1)
-            {
-                ThrowError("Cannot disable the only enabled carrier", 409);
-                return;
-            }
-
             carrier.IsEnabled = false;
             carrier.UpdatedAtUtc = DateTime.UtcNow;
 
@@ -79,11 +70,28 @@ public sealed record Request(Guid Id, string Reason);
 
 public sealed class Validator : Validator<Request>
 {
-    public Validator()
+    private readonly AppDbContext _db;
+
+    public Validator(AppDbContext db)
     {
+        _db = db;
+
         RuleFor(x => x.Reason)
             .NotEmpty()
             .WithMessage("Reason is required");
+
+        RuleFor(x => x.Id)
+            .MustAsync(BeLastEnabledCarrier)
+            .WithMessage("Cannot disable the only enabled carrier.");
+    }
+
+    private async Task<bool> BeLastEnabledCarrier(Guid id, CancellationToken ct)
+    {
+        var carrier = await _db.Carriers.FirstOrDefaultAsync(c => c.Id == id, ct);
+        if (carrier == null || !carrier.IsEnabled) return true; // allow if carrier doesn't exist or already disabled
+
+        var enabledCount = await _db.Carriers.CountAsync(c => c.IsEnabled, ct);
+        return enabledCount > 1;
     }
 }
 
