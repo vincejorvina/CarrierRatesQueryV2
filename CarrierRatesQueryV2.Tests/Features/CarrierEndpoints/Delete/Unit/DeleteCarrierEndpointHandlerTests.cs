@@ -51,7 +51,7 @@ public class DeleteCarrierEndpointHandlerTests
         // Delete endpoint has no response - it just sends NoContent
     }
 
-    [Fact(Skip = "Entity tracking issue with in-memory DB - endpoint code needs AsNoTracking")]
+    [Fact(Skip = "In-memory DB ExecuteDeleteAsync not supported - requires integration test")]
     public async Task HandleAsync_ValidRequest_ShouldDeleteEndpoint()
     {
         var db = CreateDbContext();

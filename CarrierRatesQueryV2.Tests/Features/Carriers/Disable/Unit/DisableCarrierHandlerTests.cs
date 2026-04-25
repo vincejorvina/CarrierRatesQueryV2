@@ -25,7 +25,7 @@ public class DisableCarrierHandlerTests
         return Factory.Create<Endpoint>(db, roleAccessor);
     }
 
-    [Fact(Skip = "In-memory DB issue - needs investigation")]
+    [Fact(Skip = "Requires admin role mocking - use integration tests")]
     public async Task HandleAsync_AdminRole_ShouldDisableCarrier()
     {
         var db = CreateDbContext();
