@@ -1,8 +1,9 @@
 using CarrierRatesQueryV2.Api.Services;
 using Microsoft.Extensions.Caching.Memory;
+using Shouldly;
 using Xunit;
 
-namespace CarrierRatesQueryV2.Tests.Unit;
+namespace CarrierRatesQueryV2.Tests.Features.Services.Unit;
 
 public class CarrierFailureTrackerTests
 {
@@ -14,7 +15,7 @@ public class CarrierFailureTrackerTests
 
         var result = tracker.IsCarrierFailing("fedex");
 
-        Assert.False(result);
+        result.ShouldBeFalse();
     }
 
     [Fact]
@@ -25,7 +26,7 @@ public class CarrierFailureTrackerTests
 
         tracker.RecordFailure("fedex");
 
-        Assert.True(tracker.IsCarrierFailing("fedex"));
+        tracker.IsCarrierFailing("fedex").ShouldBeTrue();
     }
 
     [Fact]
@@ -37,7 +38,7 @@ public class CarrierFailureTrackerTests
         tracker.RecordFailure("fedex");
         tracker.RecordSuccess("fedex");
 
-        Assert.False(tracker.IsCarrierFailing("fedex"));
+        tracker.IsCarrierFailing("fedex").ShouldBeFalse();
     }
 
     [Fact]
@@ -48,6 +49,6 @@ public class CarrierFailureTrackerTests
 
         tracker.RecordFailure("fedex");
 
-        Assert.False(tracker.IsCarrierFailing("ups"));
+        tracker.IsCarrierFailing("ups").ShouldBeFalse();
     }
 }
