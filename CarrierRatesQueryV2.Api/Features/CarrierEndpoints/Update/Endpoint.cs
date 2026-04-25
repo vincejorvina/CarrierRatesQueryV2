@@ -45,6 +45,7 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
         }
 
         var endpoint = await appDbContext.CarrierEndpoints
+            .AsTracking()
             .FirstOrDefaultAsync(e => e.CarrierId == req.CarrierId && e.Id == req.EndpointId, ct);
 
         if (endpoint == null)
@@ -58,8 +59,8 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
 
         await appDbContext.SaveChangesAsync(ct);
 
-        Response = new Response(endpoint.Id, endpoint.CarrierId, endpoint.Operation, endpoint.Endpoint);
-        await Send.OkAsync(Response, ct);
+        var response = new Response(endpoint.Id, endpoint.CarrierId, endpoint.Operation, endpoint.Endpoint);
+        await Send.OkAsync(response, ct);
     }
 }
 

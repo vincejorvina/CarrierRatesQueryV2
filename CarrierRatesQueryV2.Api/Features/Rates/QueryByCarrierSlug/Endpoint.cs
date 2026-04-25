@@ -120,8 +120,8 @@ public sealed class Endpoint(
             return;
         }
 
-        Response = Response.FromQuote(quote);
-        await Send.OkAsync(ct);
+        var response = Response.FromQuote(quote);
+        await Send.OkAsync(response, ct);
     }
 }
 

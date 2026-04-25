@@ -36,7 +36,7 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
         }
 
         var endpoint = await appDbContext.CarrierEndpoints
-            .AsNoTracking()
+            .AsTracking()
             .FirstOrDefaultAsync(e => e.CarrierId == req.CarrierId && e.Id == req.EndpointId, ct);
 
         if (endpoint == null)

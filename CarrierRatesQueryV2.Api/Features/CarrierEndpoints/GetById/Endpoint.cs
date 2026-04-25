@@ -50,7 +50,7 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
             return;
         }
 
-        Response = new Response(endpoint.Id, endpoint.CarrierId, endpoint.Operation, endpoint.Endpoint);
-        await Send.OkAsync(ct);
+        var response = new Response(endpoint.Id, endpoint.CarrierId, endpoint.Operation, endpoint.Endpoint);
+        await Send.OkAsync(response, ct);
     }
 }

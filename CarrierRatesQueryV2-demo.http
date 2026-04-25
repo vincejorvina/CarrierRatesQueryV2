@@ -1,8 +1,9 @@
 ### CarrierRatesQueryV2 Demo - Carrier Lifecycle
 ### Complete workflow: Query -> Disable -> Delete -> Recreate
+### Run via: dotnet run --project CarrierRatesQueryV2.Api (uses https://localhost:7244)
 
-@baseUrl = http://localhost:7244/api/v1
-@fedExId = "REPLACE_WITH_FEDEX_ID>"
+@baseUrl = https://localhost:7244/api/v1
+@fedExId = 4d28b476-7e29-4ef1-bfd9-7f634721ca10
 
 #################################################################
 ### 1. VERIFY CARRIER IS WORKING (Query Rates)
@@ -10,12 +11,12 @@
 
 ### Get all carriers first to find FedEx ID
 GET {{baseUrl}}/carriers
-X-Role: Admin
-X-Requested-By: demo.user
+Accept: */*
 
 ### Query rates from all carriers (FedEx should be in results)
 POST {{baseUrl}}/rates
 Content-Type: application/json
+Accept: */*
 
 {
     "origin": {
@@ -36,9 +37,10 @@ Content-Type: application/json
     }
 }
 
-### Query FedEx specifically
+### Query FedEx specifically (replace {{fedExId}} with actual ID from Get All)
 POST {{baseUrl}}/rates/carrier/{{fedExId}}
 Content-Type: application/json
+Accept: */*
 
 {
     "carrierId": "{{fedExId}}",
@@ -67,32 +69,44 @@ Content-Type: application/json
 ### Submit disable request (as regular user)
 POST {{baseUrl}}/carriers/{{fedExId}}/disable-requests
 Content-Type: application/json
+Accept: */*
 X-Role: User
 X-Requested-By: demo.user
 
 {
-    "carrierId": "{{fedExId}}",
     "reason": "Carrier service degradation"
 }
 
-### Admin approves the disable request (replace with actual disable request ID)
-PATCH {{baseUrl}}/disable-requests/<DISABLE_REQUEST_ID>/approve
+### Get all settlements to find pending ones
+GET {{baseUrl}}/settlements
+Accept: */*
+
+### Mark settlements as Settled (replace <SETTLEMENT_ID> with actual ID from above)
+PATCH {{baseUrl}}/settlements/a410179c-74b2-4591-9e91-63fd4dcc6bbe
 Content-Type: application/json
+Accept: */*
+
+{
+    "status": "Settled"
+}
+
+### Admin approves the disable request (replace with actual disable request ID from response above)
+PATCH {{baseUrl}}/disable-requests/5f2b0b5c-e695-4306-b2dc-a35426eb69f4/approve
+Content-Type: application/json
+Accept: */*
 X-Role: Admin
 X-Requested-By: admin.user
 
-{
-    "disableRequestId": "<DISABLE_REQUEST_ID>"
-}
+{}
 
 ### Verify FedEx is now disabled
 GET {{baseUrl}}/carriers/{{fedExId}}
-X-Role: Admin
-X-Requested-By: admin.user
+Accept: */*
 
 ### Query rates again (FedEx should no longer be in results)
 POST {{baseUrl}}/rates
 Content-Type: application/json
+Accept: */*
 
 {
     "origin": {
@@ -119,13 +133,11 @@ Content-Type: application/json
 
 ### Delete FedEx carrier
 DELETE {{baseUrl}}/carriers/{{fedExId}}
-X-Role: Admin
-X-Requested-By: admin.user
+Accept: */*
 
 ### Verify carrier is gone
 GET {{baseUrl}}/carriers/{{fedExId}}
-X-Role: Admin
-X-Requested-By: admin.user
+Accept: */*
 
 #################################################################
 ### 4. RE-CREATE THE CARRIER
@@ -134,19 +146,17 @@ X-Requested-By: admin.user
 ### Create new FedEx carrier
 POST {{baseUrl}}/carriers
 Content-Type: application/json
-X-Role: Admin
-X-Requested-By: admin.user
+Accept: */*
 
 {
     "name": "FedEx",
     "isEnabled": true
 }
 
-### Create FedEx rate endpoint (replace with actual carrier ID)
+### Create FedEx rate endpoint (replace <NEW_CARRIER_ID> with actual ID from response above)
 POST {{baseUrl}}/carriers/<NEW_CARRIER_ID>/endpoints
 Content-Type: application/json
-X-Role: Admin
-X-Requested-By: admin.user
+Accept: */*
 
 {
     "carrierId": "<NEW_CARRIER_ID>",
@@ -154,14 +164,14 @@ X-Requested-By: admin.user
     "endpoint": "http://carrierratesqueryv2-mockfedex/api/fedex/rates"
 }
 
-### Verify new carrier is enabled and can receive queries
+### Verify new carrier is enabled and can receive queries (replace <NEW_CARRIER_ID>)
 GET {{baseUrl}}/carriers/<NEW_CARRIER_ID>
-X-Role: Admin
-X-Requested-By: admin.user
+Accept: */*
 
 ### Query rates (new carrier should appear)
 POST {{baseUrl}}/rates
 Content-Type: application/json
+Accept: */*
 
 {
     "origin": {

@@ -55,7 +55,7 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
             return;
         }
 
-        Response = new Response(
+        var response = new Response(
             disableRequest.Id,
             disableRequest.CarrierId,
             disableRequest.RequestedBy,
@@ -66,6 +66,6 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
             disableRequest.ProcessedAtUtc
         );
 
-        await Send.OkAsync(ct);
+        await Send.OkAsync(response, ct);
     }
 }

@@ -42,7 +42,7 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, List
             .OrderBy(e => e.Operation)
             .ToListAsync(ct);
 
-        Response = endpoints.Select(e => new Response(e.Id, e.CarrierId, e.Operation, e.Endpoint)).ToList();
-        await Send.OkAsync(ct);
+        var response = endpoints.Select(e => new Response(e.Id, e.CarrierId, e.Operation, e.Endpoint)).ToList();
+        await Send.OkAsync(response, ct);
     }
 }

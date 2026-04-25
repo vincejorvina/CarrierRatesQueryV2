@@ -25,6 +25,8 @@ public class EndpointSummary : Summary<Endpoint>
 
 public sealed record Request(Guid Id);
 
+public sealed record EndpointDto(Guid Id, Guid CarrierId, string Operation, string Endpoint);
+
 public sealed record Response(
     Guid Id,
     string Name,
@@ -32,7 +34,7 @@ public sealed record Response(
     bool IsEnabled,
     DateTime CreatedAtUtc,
     DateTime? UpdatedAtUtc = null,
-    List<CarrierRatesQueryV2.Data.Entities.CarrierEndpoint>? Endpoints = null
+    List<EndpointDto>? Endpoints = null
 );
 
 public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Response>
@@ -61,16 +63,16 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
 
         await appDbContext.SaveChangesAsync(ct);
 
-        Response = new Response(
+        var response = new Response(
             Id: carrier.Id,
             Name: carrier.Name,
             Slug: carrier.Slug,
             IsEnabled: carrier.IsEnabled,
             CreatedAtUtc: carrier.CreatedAtUtc,
             UpdatedAtUtc: carrier.UpdatedAtUtc,
-            Endpoints: carrier.Endpoints?.OrderBy(e => e.Operation).ToList() ?? []
+            Endpoints: carrier.Endpoints?.Select(e => new EndpointDto(e.Id, e.CarrierId, e.Operation, e.Endpoint)).OrderBy(e => e.Operation).ToList() ?? []
         );
 
-        await Send.OkAsync(ct);
+        await Send.OkAsync(response, ct);
     }
 }
