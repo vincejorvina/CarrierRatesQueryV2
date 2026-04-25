@@ -37,6 +37,7 @@ public sealed class Endpoint(
     public override void Configure()
     {
         Get("carriers/{carrierId}/disable-requests");
+        AllowAnonymous();
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
@@ -55,7 +56,7 @@ public sealed class Endpoint(
             .OrderByDescending(r => r.RequestedAtUtc)
             .ToListAsync(ct);
 
-        Response = requests.Select(r => new Response(
+        var response = requests.Select(r => new Response(
             r.Id,
             r.CarrierId,
             r.RequestedBy,
@@ -66,6 +67,6 @@ public sealed class Endpoint(
             r.ProcessedAtUtc
         )).ToList();
 
-        await Send.OkAsync(ct);
+        await Send.OkAsync(response, ct);
     }
 }

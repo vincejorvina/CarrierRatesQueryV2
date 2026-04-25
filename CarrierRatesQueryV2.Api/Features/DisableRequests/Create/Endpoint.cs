@@ -48,6 +48,7 @@ public sealed class Endpoint(
     public override void Configure()
     {
         Post("carriers/{carrierId}/disable-requests");
+        AllowAnonymous();
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)

@@ -47,6 +47,7 @@ public sealed class Endpoint(
     public override void Configure()
     {
         Patch("disable-requests/{disableRequestId}/reject");
+        AllowAnonymous();
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
@@ -81,7 +82,7 @@ public sealed class Endpoint(
 
         await appDbContext.SaveChangesAsync(ct);
 
-        Response = new Response(
+        var response = new Response(
             disableRequest.Id,
             disableRequest.CarrierId,
             disableRequest.RequestedBy,
@@ -92,6 +93,6 @@ public sealed class Endpoint(
             disableRequest.ProcessedAtUtc
         );
 
-        await Send.OkAsync(ct);
+        await Send.OkAsync(response, ct);
     }
 }

@@ -34,6 +34,7 @@ public sealed class Endpoint(AppDbContext appDbContext) : EndpointWithoutRequest
     public override async Task HandleAsync(CancellationToken ct)
     {
         var carriers = await appDbContext.Carriers
+            .AsNoTracking()
             .ToListAsync(ct);
 
         var response = carriers

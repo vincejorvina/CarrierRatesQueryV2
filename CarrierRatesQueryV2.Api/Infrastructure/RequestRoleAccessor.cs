@@ -86,12 +86,6 @@ public sealed class RequestRoleAccessor(IHttpContextAccessor httpContextAccessor
 
     private static void ThrowError(string message, int statusCode)
     {
-        var problemDetails = new Microsoft.AspNetCore.Mvc.ProblemDetails
-        {
-            Title = statusCode == 400 ? "Bad Request" : "Forbidden",
-            Detail = message,
-            Status = statusCode
-        };
-        throw new Exception($"HTTP {statusCode}: {message}");
+        throw new Exception(message);
     }
 }
