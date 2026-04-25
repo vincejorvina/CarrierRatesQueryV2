@@ -22,6 +22,7 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
     public override void Configure()
     {
         Delete("carriers/{id}");
+        AllowAnonymous();
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)

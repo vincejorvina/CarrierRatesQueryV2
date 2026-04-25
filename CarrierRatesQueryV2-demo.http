@@ -1,0 +1,183 @@
+### CarrierRatesQueryV2 Demo - Carrier Lifecycle
+### Complete workflow: Query -> Disable -> Delete -> Recreate
+
+@baseUrl = http://localhost:7244/api/v1
+@fedExId = "REPLACE_WITH_FEDEX_ID>"
+
+#################################################################
+### 1. VERIFY CARRIER IS WORKING (Query Rates)
+#################################################################
+
+### Get all carriers first to find FedEx ID
+GET {{baseUrl}}/carriers
+X-Role: Admin
+X-Requested-By: demo.user
+
+### Query rates from all carriers (FedEx should be in results)
+POST {{baseUrl}}/rates
+Content-Type: application/json
+
+{
+    "origin": {
+        "postalCode": "90210",
+        "countryCode": "US"
+    },
+    "destination": {
+        "postalCode": "10001",
+        "countryCode": "US"
+    },
+    "package": {
+        "weight": 10,
+        "dimensions": {
+            "length": 10,
+            "width": 8,
+            "height": 6
+        }
+    }
+}
+
+### Query FedEx specifically
+POST {{baseUrl}}/rates/carrier/{{fedExId}}
+Content-Type: application/json
+
+{
+    "carrierId": "{{fedExId}}",
+    "origin": {
+        "postalCode": "90210",
+        "countryCode": "US"
+    },
+    "destination": {
+        "postalCode": "10001",
+        "countryCode": "US"
+    },
+    "package": {
+        "weight": 10,
+        "dimensions": {
+            "length": 10,
+            "width": 8,
+            "height": 6
+        }
+    }
+}
+
+#################################################################
+### 2. DISABLE THE CARRIER
+#################################################################
+
+### Submit disable request (as regular user)
+POST {{baseUrl}}/carriers/{{fedExId}}/disable-requests
+Content-Type: application/json
+X-Role: User
+X-Requested-By: demo.user
+
+{
+    "carrierId": "{{fedExId}}",
+    "reason": "Carrier service degradation"
+}
+
+### Admin approves the disable request (replace with actual disable request ID)
+PATCH {{baseUrl}}/disable-requests/<DISABLE_REQUEST_ID>/approve
+Content-Type: application/json
+X-Role: Admin
+X-Requested-By: admin.user
+
+{
+    "disableRequestId": "<DISABLE_REQUEST_ID>"
+}
+
+### Verify FedEx is now disabled
+GET {{baseUrl}}/carriers/{{fedExId}}
+X-Role: Admin
+X-Requested-By: admin.user
+
+### Query rates again (FedEx should no longer be in results)
+POST {{baseUrl}}/rates
+Content-Type: application/json
+
+{
+    "origin": {
+        "postalCode": "90210",
+        "countryCode": "US"
+    },
+    "destination": {
+        "postalCode": "10001",
+        "countryCode": "US"
+    },
+    "package": {
+        "weight": 10,
+        "dimensions": {
+            "length": 10,
+            "width": 8,
+            "height": 6
+        }
+    }
+}
+
+#################################################################
+### 3. DELETE THE CARRIER (After Disable)
+#################################################################
+
+### Delete FedEx carrier
+DELETE {{baseUrl}}/carriers/{{fedExId}}
+X-Role: Admin
+X-Requested-By: admin.user
+
+### Verify carrier is gone
+GET {{baseUrl}}/carriers/{{fedExId}}
+X-Role: Admin
+X-Requested-By: admin.user
+
+#################################################################
+### 4. RE-CREATE THE CARRIER
+#################################################################
+
+### Create new FedEx carrier
+POST {{baseUrl}}/carriers
+Content-Type: application/json
+X-Role: Admin
+X-Requested-By: admin.user
+
+{
+    "name": "FedEx",
+    "isEnabled": true
+}
+
+### Create FedEx rate endpoint (replace with actual carrier ID)
+POST {{baseUrl}}/carriers/<NEW_CARRIER_ID>/endpoints
+Content-Type: application/json
+X-Role: Admin
+X-Requested-By: admin.user
+
+{
+    "carrierId": "<NEW_CARRIER_ID>",
+    "operation": "Rates",
+    "endpoint": "http://carrierratesqueryv2-mockfedex/api/fedex/rates"
+}
+
+### Verify new carrier is enabled and can receive queries
+GET {{baseUrl}}/carriers/<NEW_CARRIER_ID>
+X-Role: Admin
+X-Requested-By: admin.user
+
+### Query rates (new carrier should appear)
+POST {{baseUrl}}/rates
+Content-Type: application/json
+
+{
+    "origin": {
+        "postalCode": "90210",
+        "countryCode": "US"
+    },
+    "destination": {
+        "postalCode": "10001",
+        "countryCode": "US"
+    },
+    "package": {
+        "weight": 10,
+        "dimensions": {
+            "length": 10,
+            "width": 8,
+            "height": 6
+        }
+    }
+}

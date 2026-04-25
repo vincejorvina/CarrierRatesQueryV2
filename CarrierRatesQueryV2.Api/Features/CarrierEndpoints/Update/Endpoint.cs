@@ -32,6 +32,7 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
     public override void Configure()
     {
         Put("carriers/{carrierId}/endpoints/{endpointId}");
+        AllowAnonymous();
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)

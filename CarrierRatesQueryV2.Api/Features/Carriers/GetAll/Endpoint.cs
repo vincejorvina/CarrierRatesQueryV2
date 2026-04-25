@@ -1,5 +1,4 @@
 using CarrierRatesQueryV2.Data;
-using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,7 +9,7 @@ public class EndpointSummary : Summary<Endpoint>
     public EndpointSummary()
     {
         Summary = "Get all carriers";
-        Description = "Retrieves a list of all carriers in the system, ordered by name. Each carrier includes its endpoints configuration.";
+        Description = "Retrieves a list of all carriers in the system.";
         Response(200, "Returns a list of all carriers");
     }
 }
@@ -21,8 +20,7 @@ public sealed record Response(
     string Slug,
     bool IsEnabled,
     DateTime CreatedAtUtc,
-    DateTime? UpdatedAtUtc = null,
-    List<CarrierEndpoint>? Endpoints = null
+    DateTime? UpdatedAtUtc = null
 );
 
 public sealed class Endpoint(AppDbContext appDbContext) : EndpointWithoutRequest<List<Response>>
@@ -30,16 +28,19 @@ public sealed class Endpoint(AppDbContext appDbContext) : EndpointWithoutRequest
     public override void Configure()
     {
         Get("carriers");
+        AllowAnonymous();
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
         var carriers = await appDbContext.Carriers
-            .Include(c => c.Endpoints)
-            .OrderBy(c => c.Name)
-            .Select(c => new Response(c.Id, c.Name, c.Slug, c.IsEnabled, c.CreatedAtUtc, c.UpdatedAtUtc, c.Endpoints.OrderBy(e => e.Operation).ToList()))
             .ToListAsync(ct);
 
-        await Send.OkAsync(carriers, ct);
+        var response = carriers
+            .OrderBy(c => c.Name)
+            .Select(c => new Response(c.Id, c.Name, c.Slug, c.IsEnabled, c.CreatedAtUtc, c.UpdatedAtUtc))
+            .ToList();
+
+        await Send.OkAsync(response, ct);
     }
 }

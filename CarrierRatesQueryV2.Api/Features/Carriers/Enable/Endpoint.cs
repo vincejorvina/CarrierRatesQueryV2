@@ -40,6 +40,7 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
     public override void Configure()
     {
         Patch("carriers/{id}/enable");
+        AllowAnonymous();
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
