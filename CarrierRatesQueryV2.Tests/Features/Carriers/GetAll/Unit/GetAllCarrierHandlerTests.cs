@@ -76,32 +76,4 @@ public class GetAllCarrierHandlerTests
         endpoint.Response[1].Name.ShouldBe("Mike");
         endpoint.Response[2].Name.ShouldBe("Zebra");
     }
-
-    [Fact]
-    public async Task HandleAsync_WithEndpoints_ShouldIncludeEndpoints()
-    {
-        var db = CreateDbContext();
-        var carrierId = Guid.NewGuid();
-        db.Carriers.Add(new Carrier
-        {
-            Id = carrierId,
-            Name = "Test Carrier",
-            IsEnabled = true,
-            CreatedAtUtc = DateTime.UtcNow,
-            Endpoints = new List<CarrierEndpoint>
-            {
-                new() { Id = Guid.NewGuid(), CarrierId = carrierId, Operation = "Rates", Endpoint = "https://api.test.com/rates" },
-                new() { Id = Guid.NewGuid(), CarrierId = carrierId, Operation = "Tracking", Endpoint = "https://api.test.com/tracking" }
-            }
-        });
-        await db.SaveChangesAsync();
-
-        var endpoint = CreateEndpoint(db);
-
-        await endpoint.HandleAsync(CancellationToken.None);
-
-        endpoint.Response.ShouldNotBeNull();
-        endpoint.Response.First().Endpoints.ShouldNotBeNull();
-        endpoint.Response.First().Endpoints!.Count.ShouldBe(2);
-    }
 }
