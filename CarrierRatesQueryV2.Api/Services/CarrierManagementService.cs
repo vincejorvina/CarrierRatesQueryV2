@@ -14,17 +14,17 @@ public class CarrierManagementService : ICarrierManagementService
 {
     public async Task<bool> CanDisableCarrierAsync(Guid carrierId, AppDbContext db)
     {
-        var carrier = await db.Carriers.FirstOrDefaultAsync(c => c.Id == carrierId);
+        var carrier = await db.Carriers.AsNoTracking().FirstOrDefaultAsync(c => c.Id == carrierId);
         if (carrier == null) return false;
         if (!carrier.IsEnabled) return true;
 
-        var enabledCount = await db.Carriers.CountAsync(c => c.IsEnabled);
+        var enabledCount = await db.Carriers.AsNoTracking().CountAsync(c => c.IsEnabled);
         if (enabledCount <= 1) return false;
 
-        var hasPendingShipments = await db.Shipments.AnyAsync(s => s.CarrierId == carrierId && s.Status == ShipmentStatus.Pending);
+        var hasPendingShipments = await db.Shipments.AsNoTracking().AnyAsync(s => s.CarrierId == carrierId && s.Status == ShipmentStatus.Pending);
         if (hasPendingShipments) return false;
 
-        var hasPendingSettlements = await db.CarrierFinancialSettlements.AnyAsync(s => s.CarrierId == carrierId && s.Status == CarrierFinancialSettlementStatus.Pending);
+        var hasPendingSettlements = await db.CarrierFinancialSettlements.AsNoTracking().AnyAsync(s => s.CarrierId == carrierId && s.Status == CarrierFinancialSettlementStatus.Pending);
         if (hasPendingSettlements) return false;
 
         return true;
@@ -32,7 +32,7 @@ public class CarrierManagementService : ICarrierManagementService
 
     public async Task DisableCarrierAsync(Guid carrierId, string reason, string processedBy, AppDbContext db)
     {
-        var carrier = await db.Carriers.FirstOrDefaultAsync(c => c.Id == carrierId);
+        var carrier = await db.Carriers.AsTracking().FirstOrDefaultAsync(c => c.Id == carrierId);
         if (carrier == null) return;
         if (!carrier.IsEnabled) return;
 
