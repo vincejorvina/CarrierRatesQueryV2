@@ -4,7 +4,7 @@ using CarrierRatesQueryV2.Data;
 
 public class Program
 {
-    public static async Task Main(string[] args)
+    public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +19,7 @@ public class Program
         app.UseExceptionHandler();
         app.UseHttpsRedirection();
 
-        await app.RunAsync();
+        app.Run();
     }
 
     public static WebApplication CreateHost(string[] args)
