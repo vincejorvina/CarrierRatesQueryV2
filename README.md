@@ -30,6 +30,7 @@ This is a **modernized, production-ready** version of the original Carrier Rates
 - **xUnit + Shouldly** - Testing with readable assertions
 - **EF Core InMemory** - In-memory database (v9.0.15)
 - **Microsoft.Extensions.Http.Resilience** - Retry & circuit breaker (v10.1.0)
+- **CarrierFailureTracker** - In-memory failure tracking for carrier resilience (30s cache)
 - **OpenTelemetry** - Observability & tracing (v1.14.0)
 - **Aspire** - Distributed application orchestration (v13.1.0)
 
@@ -341,6 +342,7 @@ public void Should_Return_Rates_For_Enabled_Carriers()
 ## 🎁 Bonus Features
 
 - ✅ **Resilience Patterns**: Microsoft.Extensions.Http.Resilience with retry + circuit breaker
+- ✅ **Carrier Failure Tracking**: In-memory cache tracks failing carriers to prevent repeated calls
 - ✅ **Circuit Breaker**: Automatic failure isolation for carrier APIs
 - ✅ **OpenTelemetry**: Distributed tracing and metrics
 - ✅ **Health Checks**: `/health` endpoint for load balancer integration

@@ -234,6 +234,84 @@ await ep.HandleAsync(invalidRequest);
 
 ---
 
+## Test Location Convention
+
+Tests are organized by type:
+
+**Core Service Tests** - Tests for business logic services (e.g., CarrierFailureTracker, RateQueryService):
+
+```
+CarrierRatesQueryV2.Tests/Features/Services/Unit/
+```
+
+**Endpoint Tests** - Tests for FastEndpoints (e.g., CreateCarrier, QueryRates):
+
+```
+CarrierRatesQueryV2.Tests/Features/<Category>/<Feature>/
+```
+
+**Validator Tests** - Tests for FluentValidation validators:
+
+```
+CarrierRatesQueryV2.Tests/Features/<Category>/<Feature>/
+```
+
+**Integration Tests** - Full pipeline tests:
+
+```
+CarrierRatesQueryV2.Tests/Integration/
+```
+
+Use Shouldly assertions, not xUnit's Assert. Example:
+
+```csharp
+result.ShouldBeTrue();
+result.ShouldNotBeNull();
+```
+
+---
+
+## Core Services
+
+### CarrierFailureTracker
+
+Tracks carrier failures to prevent repeated calls to failing carriers.
+
+**Interface:** `ICarrierFailureTracker`
+
+**Implementation:** `CarrierFailureTracker` (in `CarrierRatesQueryV2.Api/Services/`)
+
+**Location:** `CarrierRatesQueryV2.Api/Services/CarrierFailureTracker.cs`
+
+**Methods:**
+- `IsCarrierFailing(string carrierSlug)` - Returns true if carrier has failed within the last 30 seconds
+- `RecordFailure(string carrierSlug)` - Records a failure with 30-second cache duration
+- `RecordSuccess(string carrierSlug)` - Clears failure state on successful call
+
+**Usage:** Injected into Refit clients (FedExRefitClient, DhlRefitClient, UpsRefitClient) to handle carrier failures gracefully.
+
+**Tests:** `CarrierRatesQueryV2.Tests/Features/Services/Unit/CarrierFailureTrackerTests.cs`
+
+---
+
+## Resilience Configuration
+
+HTTP clients are configured with retry and circuit breaker patterns in `DependencyInjection.cs`.
+
+### Retry Configuration
+- Max attempts: 3
+- Delay: 2 seconds with jitter
+
+### Circuit Breaker Configuration
+- Sampling duration: 30 seconds
+- Failure ratio: 50%
+- Minimum throughput: 5 requests
+- Break duration: 30 seconds
+
+Configuration is in `AddCarrierHttpClient()` method.
+
+---
+
 ## Final Notes
 
 - Do not try to simulate the full pipeline in unit tests
