@@ -26,6 +26,7 @@ public sealed class Endpoint(
         }
 
         var carrier = await appDbContext.Carriers
+            .AsTracking()
             .Include(c => c.Endpoints)
             .FirstOrDefaultAsync(c => c.Id == req.Id, ct);
 
