@@ -182,6 +182,8 @@ Once running, access the API:
 - `/api/carriers/{id}/endpoints` - GET/POST/PUT/DELETE for carrier endpoint management
 - `/api/carriers/{id}/disable` - POST to disable a carrier (admin approval workflow)
 - `/api/disable-requests` - GET/POST for disable request approval workflow
+- `/api/shipments` - GET/POST/PATCH/DELETE for shipment management
+- `/api/settlements` - GET/POST/PATCH/DELETE for settlement management
 
 ---
 

@@ -55,6 +55,21 @@ Response
 
 ---
 
+## EF Core Change Tracking
+
+AppDbContext is configured with `AsNoTracking()` by default. Always use `AsTracking()` explicitly for write operations to ensure EF Core tracks changes for save.
+
+**For write operations (Create, Update, Delete):**
+```csharp
+var entity = await db.Carriers
+    .AsTracking()
+    .FirstOrDefaultAsync(c => c.Id == id);
+```
+
+Read-only operations use AsNoTracking() by default and don't need to be specified.
+
+---
+
 ## Testing Strategy (IMPORTANT)
 
 Testing is intentionally split into **three distinct layers**.
