@@ -3,7 +3,7 @@
 ### Run via: dotnet run --project CarrierRatesQueryV2.Api (uses https://localhost:7244)
 
 @baseUrl = https://localhost:7244/api/v1
-@fedExId = 4d28b476-7e29-4ef1-bfd9-7f634721ca10
+@fedExId = 51cfe6c0-7ff7-4780-b9d6-2043291878d5
 
 #################################################################
 ### 1. VERIFY CARRIER IS WORKING (Query Rates)
@@ -82,7 +82,7 @@ GET {{baseUrl}}/settlements
 Accept: */*
 
 ### Mark settlements as Settled (replace <SETTLEMENT_ID> with actual ID from above)
-PATCH {{baseUrl}}/settlements/a410179c-74b2-4591-9e91-63fd4dcc6bbe
+PATCH {{baseUrl}}/settlements/29d00ecd-0a2d-41f7-b50b-146f45d8a3e5
 Content-Type: application/json
 Accept: */*
 
@@ -91,7 +91,7 @@ Accept: */*
 }
 
 ### Admin approves the disable request (replace with actual disable request ID from response above)
-PATCH {{baseUrl}}/disable-requests/5f2b0b5c-e695-4306-b2dc-a35426eb69f4/approve
+PATCH {{baseUrl}}/disable-requests/53959dfd-f440-447a-a1e9-a9529e6e4db6/approve
 Content-Type: application/json
 Accept: */*
 X-Role: Admin
@@ -139,6 +139,9 @@ Accept: */*
 GET {{baseUrl}}/carriers/{{fedExId}}
 Accept: */*
 
+GET {{baseUrl}}/carriers
+Accept: */*
+
 #################################################################
 ### 4. RE-CREATE THE CARRIER
 #################################################################
@@ -154,18 +157,17 @@ Accept: */*
 }
 
 ### Create FedEx rate endpoint (replace <NEW_CARRIER_ID> with actual ID from response above)
-POST {{baseUrl}}/carriers/<NEW_CARRIER_ID>/endpoints
+POST {{baseUrl}}/carriers/67894c34-22c3-4eb9-add8-5c03d09ccab4/endpoints
 Content-Type: application/json
 Accept: */*
 
 {
-    "carrierId": "<NEW_CARRIER_ID>",
     "operation": "Rates",
     "endpoint": "http://carrierratesqueryv2-mockfedex/api/fedex/rates"
 }
 
 ### Verify new carrier is enabled and can receive queries (replace <NEW_CARRIER_ID>)
-GET {{baseUrl}}/carriers/<NEW_CARRIER_ID>
+GET {{baseUrl}}/carriers/67894c34-22c3-4eb9-add8-5c03d09ccab4
 Accept: */*
 
 ### Query rates (new carrier should appear)
