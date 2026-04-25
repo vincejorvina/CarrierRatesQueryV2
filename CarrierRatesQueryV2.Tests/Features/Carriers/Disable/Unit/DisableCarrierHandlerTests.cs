@@ -1,5 +1,6 @@
 using CarrierRatesQueryV2.Api.Features.Carriers.Disable;
 using CarrierRatesQueryV2.Api.Infrastructure;
+using CarrierRatesQueryV2.Api.Services;
 using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
@@ -22,7 +23,9 @@ public class DisableCarrierHandlerTests
 
     private static Endpoint CreateEndpoint(AppDbContext db, IRequestRoleAccessor roleAccessor)
     {
-        return Factory.Create<Endpoint>(db, roleAccessor);
+        var carrierService = Substitute.For<ICarrierManagementService>();
+        carrierService.ValidateCanDisableCarrierAsync(Arg.Any<Guid>(), Arg.Any<AppDbContext>()).Returns((true, null));
+        return Factory.Create<Endpoint>(db, roleAccessor, carrierService);
     }
 
     [Fact(Skip = "Requires admin role mocking - use integration tests")]

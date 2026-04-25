@@ -110,7 +110,7 @@ public class ApproveDisableRequestHandlerTests
         roleAccessor.GetRequestedBy().Returns("admin");
 
         var carrierService = Substitute.For<ICarrierManagementService>();
-        carrierService.CanDisableCarrierAsync(Arg.Any<Guid>(), Arg.Any<AppDbContext>()).Returns(true);
+        carrierService.ValidateCanDisableCarrierAsync(Arg.Any<Guid>(), Arg.Any<AppDbContext>()).Returns((true, null));
 
         var endpoint = CreateEndpoint(db, roleAccessor, carrierService);
         var request = new Request(requestId);
@@ -119,5 +119,62 @@ public class ApproveDisableRequestHandlerTests
 
         endpoint.Response.ShouldNotBeNull();
         endpoint.Response.Status.ShouldBe("Approved");
+    }
+
+    [Fact]
+    public async Task HandleAsync_PendingRequestsForOtherCarriers_ShouldFail()
+    {
+        var db = CreateDbContext();
+        var carrierAId = Guid.NewGuid();
+        var carrierBId = Guid.NewGuid();
+        var carrierCId = Guid.NewGuid();
+        var requestAId = Guid.NewGuid();
+
+        db.Carriers.Add(new Carrier { Id = carrierAId, Name = "Carrier A", IsEnabled = true, CreatedAtUtc = DateTime.UtcNow });
+        db.Carriers.Add(new Carrier { Id = carrierBId, Name = "Carrier B", IsEnabled = true, CreatedAtUtc = DateTime.UtcNow });
+        db.Carriers.Add(new Carrier { Id = carrierCId, Name = "Carrier C", IsEnabled = true, CreatedAtUtc = DateTime.UtcNow });
+
+        db.DisableRequests.Add(new DisableRequest
+        {
+            Id = requestAId,
+            CarrierId = carrierAId,
+            RequestedBy = "user",
+            Reason = "Disable A",
+            Status = DisableRequestStatus.Pending,
+            RequestedAtUtc = DateTime.UtcNow
+        });
+
+        db.DisableRequests.Add(new DisableRequest
+        {
+            Id = Guid.NewGuid(),
+            CarrierId = carrierBId,
+            RequestedBy = "user2",
+            Reason = "Disable B",
+            Status = DisableRequestStatus.Pending,
+            RequestedAtUtc = DateTime.UtcNow
+        });
+        db.DisableRequests.Add(new DisableRequest
+        {
+            Id = Guid.NewGuid(),
+            CarrierId = carrierCId,
+            RequestedBy = "user3",
+            Reason = "Disable C",
+            Status = DisableRequestStatus.Pending,
+            RequestedAtUtc = DateTime.UtcNow
+        });
+        await db.SaveChangesAsync();
+
+        var roleAccessor = Substitute.For<IRequestRoleAccessor>();
+        roleAccessor.GetRequiredRole().Returns(RequestRole.Admin);
+        roleAccessor.GetRequestedBy().Returns("admin");
+
+        var carrierService = Substitute.For<ICarrierManagementService>();
+        carrierService.ValidateCanDisableCarrierAsync(Arg.Any<Guid>(), Arg.Any<AppDbContext>()).Returns((false, "Cannot disable carrier: would leave no enabled carriers after accounting for all pending disable requests."));
+
+        var endpoint = CreateEndpoint(db, roleAccessor, carrierService);
+        var request = new Request(requestAId);
+
+        await Assert.ThrowsAsync<FastEndpoints.ValidationFailureException>(async () =>
+            await endpoint.HandleAsync(request, CancellationToken.None));
     }
 }

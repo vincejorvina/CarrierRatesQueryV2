@@ -6,28 +6,50 @@ namespace CarrierRatesQueryV2.Api.Services;
 
 public interface ICarrierManagementService
 {
-    Task<bool> CanDisableCarrierAsync(Guid carrierId, AppDbContext db);
+    Task<(bool CanDisable, string? Reason)> ValidateCanDisableCarrierAsync(Guid carrierId, AppDbContext db);
     Task DisableCarrierAsync(Guid carrierId, string reason, string processedBy, AppDbContext db);
 }
 
 public class CarrierManagementService : ICarrierManagementService
 {
-    public async Task<bool> CanDisableCarrierAsync(Guid carrierId, AppDbContext db)
+    public async Task<(bool CanDisable, string? Reason)> ValidateCanDisableCarrierAsync(Guid carrierId, AppDbContext db)
     {
         var carrier = await db.Carriers.AsNoTracking().FirstOrDefaultAsync(c => c.Id == carrierId);
-        if (carrier == null) return false;
-        if (!carrier.IsEnabled) return true;
+        if (carrier == null)
+        {
+            return (false, "Carrier not found");
+        }
+
+        if (!carrier.IsEnabled)
+        {
+            return (true, null);
+        }
 
         var enabledCount = await db.Carriers.AsNoTracking().CountAsync(c => c.IsEnabled);
-        if (enabledCount <= 1) return false;
+        var pendingRequestsForOtherCarriers = await db.DisableRequests
+            .AsNoTracking()
+            .Where(r => r.Status == DisableRequestStatus.Pending && r.CarrierId != carrierId)
+            .CountAsync();
+
+        var enabledAfterThisDisable = enabledCount - 1 - pendingRequestsForOtherCarriers;
+        if (enabledAfterThisDisable < 1)
+        {
+            return (false, "Cannot disable carrier: would leave no enabled carriers after accounting for all pending disable requests.");
+        }
 
         var hasPendingShipments = await db.Shipments.AsNoTracking().AnyAsync(s => s.CarrierId == carrierId && s.Status == ShipmentStatus.Pending);
-        if (hasPendingShipments) return false;
+        if (hasPendingShipments)
+        {
+            return (false, "Cannot disable carrier: has pending shipments.");
+        }
 
         var hasPendingSettlements = await db.CarrierFinancialSettlements.AsNoTracking().AnyAsync(s => s.CarrierId == carrierId && s.Status == CarrierFinancialSettlementStatus.Pending);
-        if (hasPendingSettlements) return false;
+        if (hasPendingSettlements)
+        {
+            return (false, "Cannot disable carrier: has pending settlements.");
+        }
 
-        return true;
+        return (true, null);
     }
 
     public async Task DisableCarrierAsync(Guid carrierId, string reason, string processedBy, AppDbContext db)

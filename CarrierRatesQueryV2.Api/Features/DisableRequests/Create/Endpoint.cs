@@ -1,4 +1,5 @@
 using CarrierRatesQueryV2.Api.Infrastructure;
+using CarrierRatesQueryV2.Api.Services;
 using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
@@ -12,7 +13,7 @@ public class EndpointSummary : Summary<Endpoint>
     public EndpointSummary()
     {
         Summary = "Create a disable request";
-        Description = "Creates a new request to disable a carrier. The request must be approved or rejected by an administrator before taking effect.";
+        Description = "Creates a new request to disable a carrier. Validates that the carrier can be disabled (has no pending shipments, settlements, and would not leave the system with no enabled carriers).";
         ExampleRequest = new Request(Guid.Empty, "Carrier service degradation");
         Response(201, "Disable request created successfully", example: new Response(
             Guid.Empty,
@@ -23,7 +24,7 @@ public class EndpointSummary : Summary<Endpoint>
             DateTime.UtcNow,
             null,
             null));
-        Response(400, "Bad request - missing X-Role header, missing X-Requested-By header, or empty reason");
+        Response(400, "Bad request - carrier cannot be disabled (has pending shipments, settlements, or would leave no enabled carriers)");
         Response(404, "Carrier with the specified ID was not found");
     }
 }
@@ -92,8 +93,26 @@ public sealed class Endpoint(
 
 public sealed class Validator : Validator<Request>
 {
-    public Validator()
+    private readonly AppDbContext _db;
+    private readonly ICarrierManagementService _carrierManagementService;
+
+    public Validator(AppDbContext db, ICarrierManagementService carrierManagementService)
     {
-        RuleFor(x => x.Reason).NotEmpty();
+        _db = db;
+        _carrierManagementService = carrierManagementService;
+
+        RuleFor(x => x.Reason)
+            .NotEmpty()
+            .WithMessage("Reason is required");
+
+        RuleFor(x => x.CarrierId)
+            .MustAsync(BeAbleToDisableCarrier)
+            .WithMessage("Cannot create disable request: carrier cannot be disabled.");
+    }
+
+    private async Task<bool> BeAbleToDisableCarrier(Guid carrierId, CancellationToken ct)
+    {
+        var (canDisable, _) = await _carrierManagementService.ValidateCanDisableCarrierAsync(carrierId, _db);
+        return canDisable;
     }
 }

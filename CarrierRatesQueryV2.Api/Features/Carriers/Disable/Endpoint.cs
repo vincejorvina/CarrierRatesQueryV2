@@ -1,4 +1,5 @@
 using CarrierRatesQueryV2.Api.Infrastructure;
+using CarrierRatesQueryV2.Api.Services;
 using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
@@ -12,11 +13,11 @@ public class EndpointSummary : Summary<Endpoint>
     public EndpointSummary()
     {
         Summary = "Disable a carrier";
-        Description = "Immediately disables a carrier without requiring a disable request. Only administrators can use this endpoint. For regular users, use the disable request flow instead.";
+        Description = "Immediately disables a carrier without requiring a disable request. Only administrators can use this endpoint. Validates that disabling would not leave the system with no enabled carriers.";
         ExampleRequest = new Request(Guid.Empty, "Scheduled maintenance");
         Response(200, "Carrier has been disabled");
         Response(400, "Bad request - missing X-Role header, invalid X-Role value, or missing reason");
-        Response(403, "Forbidden - only administrators can directly disable carriers");
+        Response(403, "Forbidden - only administrators can disable carriers");
         Response(404, "Carrier with the specified ID was not found");
         Response(409, "Conflict - cannot disable the only enabled carrier");
     }
@@ -38,7 +39,8 @@ public sealed record Response(
 
 public sealed class Endpoint(
     AppDbContext appDbContext,
-    IRequestRoleAccessor requestRoleAccessor) : Endpoint<Request, Response>
+    IRequestRoleAccessor requestRoleAccessor,
+    ICarrierManagementService carrierManagementService) : Endpoint<Request, Response>
 {
     public override void Configure()
     {
@@ -69,6 +71,13 @@ public sealed class Endpoint(
 
         if (carrier.IsEnabled)
         {
+            var (canDisable, reason) = await carrierManagementService.ValidateCanDisableCarrierAsync(carrier.Id, appDbContext);
+            if (!canDisable)
+            {
+                ThrowError($"Cannot disable carrier: {reason}", 409);
+                return;
+            }
+
             carrier.IsEnabled = false;
             carrier.UpdatedAtUtc = DateTime.UtcNow;
 
@@ -100,26 +109,25 @@ public sealed class Endpoint(
 public sealed class Validator : Validator<Request>
 {
     private readonly AppDbContext _db;
+    private readonly ICarrierManagementService _carrierManagementService;
 
-    public Validator(AppDbContext db)
+    public Validator(AppDbContext db, ICarrierManagementService carrierManagementService)
     {
         _db = db;
+        _carrierManagementService = carrierManagementService;
 
         RuleFor(x => x.Reason)
             .NotEmpty()
             .WithMessage("Reason is required");
 
         RuleFor(x => x.Id)
-            .MustAsync(BeLastEnabledCarrier)
-            .WithMessage("Cannot disable the only enabled carrier.");
+            .MustAsync(BeAbleToDisableCarrier)
+            .WithMessage("Cannot disable carrier.");
     }
 
-    private async Task<bool> BeLastEnabledCarrier(Guid id, CancellationToken ct)
+    private async Task<bool> BeAbleToDisableCarrier(Guid carrierId, CancellationToken ct)
     {
-        var carrier = await _db.Carriers.FirstOrDefaultAsync(c => c.Id == id, ct);
-        if (carrier == null || !carrier.IsEnabled) return true;
-
-        var enabledCount = await _db.Carriers.CountAsync(c => c.IsEnabled, ct);
-        return enabledCount > 1;
+        var (canDisable, _) = await _carrierManagementService.ValidateCanDisableCarrierAsync(carrierId, _db);
+        return canDisable;
     }
 }
