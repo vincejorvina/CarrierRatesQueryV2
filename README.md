@@ -279,12 +279,48 @@ dotnet test CarrierRatesQueryV2.Tests
 dotnet test --collect:"XPlat Code Coverage"
 ```
 
-### Test Categories
+### Test Structure
 
-- **Core Tests** (`Core/`) - Tests for business logic, strategies, and adapters
-- **API Tests** (`Api/`) - Tests for API features and endpoints
-- **Integration Tests** (`Integration/`) - End-to-end API integration tests
-- **Mock Carrier Tests** (`MockCarrierServices/`) - Tests for mock carrier APIs
+Tests are organized following the **Testing Strategy** outlined in `AGENTS.md`:
+
+```
+CarrierRatesQueryV2.Tests/
+├ Features/
+│  ├ <Feature>/
+│  │  ├ Unit/           # Endpoint/Handler unit tests (Factory.Create<T>)
+│  │  ├ Validator/      # Validator tests (FluentValidation)
+│  │  └ Integration/    # Full pipeline tests (HTTP calls)
+│  └ Services/
+│     └ Unit/           # Service unit tests
+└ Infrastructure/
+   └ TestWebApplicationFactory.cs  # Integration test base
+```
+
+### Integration Tests
+
+Integration tests use `WebApplicationFactory` with:
+- **Unique in-memory database** per test (reset via `EnsureDeletedAsync` + `EnsureCreatedAsync`)
+- **Sequential execution** via `[Collection("IntegrationTests")]` to avoid conflicts
+- **Seed data** automatically applied on test initialization
+
+#### Creating Integration Tests
+
+```csharp
+[Collection("IntegrationTests")]
+public class MyFeatureTests : IntegrationTestBase
+{
+    public MyFeatureTests(TestWebApplicationFactory f) : base(f) { }
+    
+    [Fact]
+    public async Task Endpoint_WithValidRequest_ShouldReturn200()
+    {
+        var response = await Client.PostAsJsonAsync("/api/v1/endpoint", request);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+}
+```
+
+**Route Pattern:** FastEndpoints uses versioning - routes are `/api/v1/{endpoint}`
 
 ### Example Test (Shouldly Syntax)
 

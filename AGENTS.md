@@ -164,6 +164,40 @@ Verify full system behavior including:
 ### Characteristics
 - Uses `WebApplicationFactory`
 - Uses real HTTP calls
+- **Sequential execution** via `[Collection("IntegrationTests")]`
+- **Database reset** between tests via `EnsureDeletedAsync` + `EnsureCreatedAsync` + reseed
+
+### Infrastructure
+
+Located in `CarrierRatesQueryV2.Tests/Infrastructure/`:
+
+| File | Purpose |
+|------|---------|
+| `TestWebApplicationFactory.cs` | WebApplicationFactory with in-memory DB |
+| `IntegrationTestBase.cs` | Base class with `Client` and DB reset |
+| `CarrierFailureSimulationFixture.cs` | Placeholder for HTTP mocking |
+
+### Creating Integration Tests
+
+```csharp
+[Collection("IntegrationTests")]
+public class MyFeatureTests : IntegrationTestBase
+{
+    public MyFeatureTests(TestWebApplicationFactory f) : base(f) { }
+    
+    [Fact]
+    public async Task Endpoint_WithValidRequest_ShouldReturn200()
+    {
+        var response = await Client.PostAsJsonAsync("/api/v1/endpoint", request);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+}
+```
+
+**Important:** 
+- Route prefix is `/api/v1/` (FastEndpoints versioning)
+- Use `[Collection("IntegrationTests")]` to run sequentially
+- Database is reset between tests via `InitializeAsync`
 
 ### Example
 
