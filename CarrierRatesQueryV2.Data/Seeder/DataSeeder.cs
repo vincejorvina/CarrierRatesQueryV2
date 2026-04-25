@@ -36,7 +36,7 @@ public class DataSeeder(AppDbContext context)
             {
                 Id = Guid.NewGuid(),
                 Operation = "Rates",
-                Endpoint = "http://localhost:5225/api/dhl/rates"
+                Endpoint = "http://carrierratesqueryv2-mockdhl/api/dhl/rates"
             }]
         };
 
@@ -50,7 +50,7 @@ public class DataSeeder(AppDbContext context)
             {
                 Id = Guid.NewGuid(),
                 Operation = "Rates",
-                Endpoint = "http://localhost:5172/api/ups/shipping-rates"
+                Endpoint = "http://carrierratesqueryv2-mockups/api/ups/shipping-rates"
             }]
         };
 
