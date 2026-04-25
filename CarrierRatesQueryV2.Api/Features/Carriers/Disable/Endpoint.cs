@@ -7,6 +7,33 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.Carriers.Disable;
 
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Disable a carrier";
+        Description = "Immediately disables a carrier without requiring a disable request. Only administrators can use this endpoint. For regular users, use the disable request flow instead.";
+        ExampleRequest = new Request(Guid.Empty, "Scheduled maintenance");
+        Response(200, "Carrier has been disabled");
+        Response(400, "Bad request - missing X-Role header, invalid X-Role value, or missing reason");
+        Response(403, "Forbidden - only administrators can directly disable carriers");
+        Response(404, "Carrier with the specified ID was not found");
+        Response(409, "Conflict - cannot disable the only enabled carrier");
+    }
+}
+
+public sealed record Request(Guid Id, string Reason);
+
+public sealed record Response(
+    Guid Id,
+    string Name,
+    string Slug,
+    bool IsEnabled,
+    DateTime CreatedAtUtc,
+    DateTime? UpdatedAtUtc = null,
+    List<CarrierRatesQueryV2.Data.Entities.CarrierEndpoint>? Endpoints = null
+);
+
 public sealed class Endpoint(
     AppDbContext appDbContext,
     IRequestRoleAccessor requestRoleAccessor) : Endpoint<Request, Response>
@@ -67,8 +94,6 @@ public sealed class Endpoint(
     }
 }
 
-public sealed record Request(Guid Id, string Reason);
-
 public sealed class Validator : Validator<Request>
 {
     private readonly AppDbContext _db;
@@ -89,34 +114,9 @@ public sealed class Validator : Validator<Request>
     private async Task<bool> BeLastEnabledCarrier(Guid id, CancellationToken ct)
     {
         var carrier = await _db.Carriers.FirstOrDefaultAsync(c => c.Id == id, ct);
-        if (carrier == null || !carrier.IsEnabled) return true; // allow if carrier doesn't exist or already disabled
+        if (carrier == null || !carrier.IsEnabled) return true;
 
         var enabledCount = await _db.Carriers.CountAsync(c => c.IsEnabled, ct);
         return enabledCount > 1;
-    }
-}
-
-public sealed record Response(
-    Guid Id,
-    string Name,
-    string Slug,
-    bool IsEnabled,
-    DateTime CreatedAtUtc,
-    DateTime? UpdatedAtUtc = null,
-    List<CarrierRatesQueryV2.Data.Entities.CarrierEndpoint>? Endpoints = null
-);
-
-public class EndpointSummary : Summary<Endpoint>
-{
-    public EndpointSummary()
-    {
-        Summary = "Disable a carrier";
-        Description = "Immediately disables a carrier without requiring a disable request. Only administrators can use this endpoint. For regular users, use the disable request flow instead.";
-        ExampleRequest = new Request(Guid.Empty, "Scheduled maintenance");
-        Response(200, "Carrier has been disabled");
-        Response(400, "Bad request - missing X-Role header, invalid X-Role value, or missing reason");
-        Response(403, "Forbidden - only administrators can directly disable carriers");
-        Response(404, "Carrier with the specified ID was not found");
-        Response(409, "Conflict - cannot disable the only enabled carrier");
     }
 }

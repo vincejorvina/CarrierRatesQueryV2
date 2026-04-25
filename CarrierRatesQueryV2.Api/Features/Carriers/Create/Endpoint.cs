@@ -6,6 +6,33 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.Carriers.Create;
 
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Create a new carrier";
+        Description = "Creates a new carrier in the system. The carrier name must be unique and no longer than 100 characters.";
+        ExampleRequest = new Request("FedEx Ground", true);
+        Response(201, "Carrier created successfully", example: new Response(
+            Guid.Empty,
+            "FedEx Ground",
+            "fedex-ground",
+            true,
+            DateTime.UtcNow));
+        Response(400, "Validation failed - name is required, exceeds 100 characters, or is not unique");
+    }
+}
+
+public sealed record Request(string Name, bool IsEnabled);
+
+public sealed record Response(
+    Guid Id,
+    string Name,
+    string Slug,
+    bool IsEnabled,
+    DateTime CreatedAtUtc
+);
+
 public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Response>
 {
     public override void Configure()
@@ -32,16 +59,6 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
     }
 }
 
-public sealed record Request(string Name, bool IsEnabled);
-
-public sealed record Response(
-    Guid Id,
-    string Name,
-    string Slug,
-    bool IsEnabled,
-    DateTime CreatedAtUtc
-);
-
 public sealed class Validator : Validator<Request>
 {
     private readonly AppDbContext _db;
@@ -62,22 +79,5 @@ public sealed class Validator : Validator<Request>
     {
         var exists = await _db.Carriers.AnyAsync(r => r.Name == name, ct);
         return !exists;
-    }
-}
-
-public class EndpointSummary : Summary<Endpoint>
-{
-    public EndpointSummary()
-    {
-        Summary = "Create a new carrier";
-        Description = "Creates a new carrier in the system. The carrier name must be unique and no longer than 100 characters.";
-        ExampleRequest = new Request("FedEx Ground", true);
-        Response(201, "Carrier created successfully", example: new Response(
-            Guid.Empty,
-            "FedEx Ground",
-            "fedex-ground",
-            true,
-            DateTime.UtcNow));
-        Response(400, "Validation failed - name is required, exceeds 100 characters, or is not unique");
     }
 }

@@ -7,6 +7,41 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.DisableRequests.Approve;
 
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Approve a disable request";
+        Description = "Approves a pending disable request, which will disable the carrier. Only administrators can approve requests. The carrier will not be disabled if it's the only enabled carrier, has pending shipments, or has pending settlements.";
+        Response(200, "Disable request approved and carrier disabled", example: new Response(
+            Guid.Empty,
+            Guid.Empty,
+            "user",
+            "Carrier service degradation",
+            "Approved",
+            DateTime.UtcNow,
+            "admin",
+            DateTime.UtcNow));
+        Response(400, "Bad request - missing or invalid X-Role header, or request is not in pending status");
+        Response(403, "Forbidden - only administrators can approve disable requests");
+        Response(404, "Disable request with the specified ID was not found");
+        Response(409, "Conflict - cannot disable the only enabled carrier, carrier has pending shipments, or carrier has pending settlements");
+    }
+}
+
+public sealed record Request(Guid DisableRequestId);
+
+public sealed record Response(
+    Guid Id,
+    Guid CarrierId,
+    string RequestedBy,
+    string Reason,
+    string Status,
+    DateTime RequestedAtUtc,
+    string? ProcessedBy,
+    DateTime? ProcessedAtUtc
+);
+
 public sealed class Endpoint(
     AppDbContext appDbContext,
     IRequestRoleAccessor requestRoleAccessor,
@@ -91,40 +126,5 @@ public sealed class Endpoint(
         );
 
         await Send.OkAsync(ct);
-    }
-}
-
-public sealed record Request(Guid DisableRequestId);
-
-public sealed record Response(
-    Guid Id,
-    Guid CarrierId,
-    string RequestedBy,
-    string Reason,
-    string Status,
-    DateTime RequestedAtUtc,
-    string? ProcessedBy,
-    DateTime? ProcessedAtUtc
-);
-
-public class EndpointSummary : Summary<Endpoint>
-{
-    public EndpointSummary()
-    {
-        Summary = "Approve a disable request";
-        Description = "Approves a pending disable request, which will disable the carrier. Only administrators can approve requests. The carrier will not be disabled if it's the only enabled carrier, has pending shipments, or has pending settlements.";
-        Response(200, "Disable request approved and carrier disabled", example: new Response(
-            Guid.Empty,
-            Guid.Empty,
-            "user",
-            "Carrier service degradation",
-            "Approved",
-            DateTime.UtcNow,
-            "admin",
-            DateTime.UtcNow));
-        Response(400, "Bad request - missing or invalid X-Role header, or request is not in pending status");
-        Response(403, "Forbidden - only administrators can approve disable requests");
-        Response(404, "Disable request with the specified ID was not found");
-        Response(409, "Conflict - cannot disable the only enabled carrier, carrier has pending shipments, or carrier has pending settlements");
     }
 }

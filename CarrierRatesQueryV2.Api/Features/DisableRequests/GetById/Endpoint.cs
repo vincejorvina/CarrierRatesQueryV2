@@ -4,6 +4,38 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.DisableRequests.GetById;
 
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Get a disable request by ID";
+        Description = "Retrieves a single disable request by its unique identifier.";
+        Response(200, "Returns the disable request", example: new Response(
+            Guid.Empty,
+            Guid.Empty,
+            "admin",
+            "Carrier service degradation",
+            "Pending",
+            DateTime.UtcNow,
+            null,
+            null));
+        Response(404, "Disable request with the specified ID was not found");
+    }
+}
+
+public sealed record Request(Guid DisableRequestId);
+
+public sealed record Response(
+    Guid Id,
+    Guid CarrierId,
+    string RequestedBy,
+    string Reason,
+    string Status,
+    DateTime RequestedAtUtc,
+    string? ProcessedBy,
+    DateTime? ProcessedAtUtc
+);
+
 public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Response>
 {
     public override void Configure()
@@ -34,37 +66,5 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
         );
 
         await Send.OkAsync(ct);
-    }
-}
-
-public sealed record Request(Guid DisableRequestId);
-
-public sealed record Response(
-    Guid Id,
-    Guid CarrierId,
-    string RequestedBy,
-    string Reason,
-    string Status,
-    DateTime RequestedAtUtc,
-    string? ProcessedBy,
-    DateTime? ProcessedAtUtc
-);
-
-public class EndpointSummary : Summary<Endpoint>
-{
-    public EndpointSummary()
-    {
-        Summary = "Get a disable request by ID";
-        Description = "Retrieves a single disable request by its unique identifier.";
-        Response(200, "Returns the disable request", example: new Response(
-            Guid.Empty,
-            Guid.Empty,
-            "admin",
-            "Carrier service degradation",
-            "Pending",
-            DateTime.UtcNow,
-            null,
-            null));
-        Response(404, "Disable request with the specified ID was not found");
     }
 }

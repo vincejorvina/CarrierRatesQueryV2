@@ -5,6 +5,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.DisableRequests.GetAll;
 
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Get all disable requests";
+        Description = "Retrieves all disable requests in the system, ordered by most recently requested.";
+        Response(200, "Returns a list of all disable requests");
+        Response(400, "Bad request - missing or invalid X-Role header");
+    }
+}
+
+public sealed record Response(
+    Guid Id,
+    Guid CarrierId,
+    string RequestedBy,
+    string Reason,
+    string Status,
+    DateTime RequestedAtUtc,
+    string? ProcessedBy,
+    DateTime? ProcessedAtUtc
+);
+
 public sealed class Endpoint(
     AppDbContext appDbContext,
     IRequestRoleAccessor requestRoleAccessor) : EndpointWithoutRequest<List<Response>>
@@ -34,27 +56,5 @@ public sealed class Endpoint(
         )).ToList();
 
         await Send.OkAsync(ct);
-    }
-}
-
-public sealed record Response(
-    Guid Id,
-    Guid CarrierId,
-    string RequestedBy,
-    string Reason,
-    string Status,
-    DateTime RequestedAtUtc,
-    string? ProcessedBy,
-    DateTime? ProcessedAtUtc
-);
-
-public class EndpointSummary : Summary<Endpoint>
-{
-    public EndpointSummary()
-    {
-        Summary = "Get all disable requests";
-        Description = "Retrieves all disable requests in the system, ordered by most recently requested.";
-        Response(200, "Returns a list of all disable requests");
-        Response(400, "Bad request - missing or invalid X-Role header");
     }
 }

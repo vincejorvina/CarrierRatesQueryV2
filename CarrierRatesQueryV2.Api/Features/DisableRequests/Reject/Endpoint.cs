@@ -6,6 +6,40 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.DisableRequests.Reject;
 
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Reject a disable request";
+        Description = "Rejects a pending disable request. Only administrators can reject requests.";
+        Response(200, "Disable request rejected", example: new Response(
+            Guid.Empty,
+            Guid.Empty,
+            "admin",
+            "Carrier service degradation",
+            "Rejected",
+            DateTime.UtcNow,
+            "admin",
+            DateTime.UtcNow));
+        Response(400, "Bad request - missing or invalid X-Role header, or request is not in pending status");
+        Response(403, "Forbidden - only administrators can reject disable requests");
+        Response(404, "Disable request with the specified ID was not found");
+    }
+}
+
+public sealed record Request(Guid DisableRequestId);
+
+public sealed record Response(
+    Guid Id,
+    Guid CarrierId,
+    string RequestedBy,
+    string Reason,
+    string Status,
+    DateTime RequestedAtUtc,
+    string? ProcessedBy,
+    DateTime? ProcessedAtUtc
+);
+
 public sealed class Endpoint(
     AppDbContext appDbContext,
     IRequestRoleAccessor requestRoleAccessor) : Endpoint<Request, Response>
@@ -59,39 +93,5 @@ public sealed class Endpoint(
         );
 
         await Send.OkAsync(ct);
-    }
-}
-
-public sealed record Request(Guid DisableRequestId);
-
-public sealed record Response(
-    Guid Id,
-    Guid CarrierId,
-    string RequestedBy,
-    string Reason,
-    string Status,
-    DateTime RequestedAtUtc,
-    string? ProcessedBy,
-    DateTime? ProcessedAtUtc
-);
-
-public class EndpointSummary : Summary<Endpoint>
-{
-    public EndpointSummary()
-    {
-        Summary = "Reject a disable request";
-        Description = "Rejects a pending disable request. Only administrators can reject requests.";
-        Response(200, "Disable request rejected", example: new Response(
-            Guid.Empty,
-            Guid.Empty,
-            "admin",
-            "Carrier service degradation",
-            "Rejected",
-            DateTime.UtcNow,
-            "admin",
-            DateTime.UtcNow));
-        Response(400, "Bad request - missing or invalid X-Role header, or request is not in pending status");
-        Response(403, "Forbidden - only administrators can reject disable requests");
-        Response(404, "Disable request with the specified ID was not found");
     }
 }

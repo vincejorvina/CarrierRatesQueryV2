@@ -4,6 +4,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.Carriers.Delete;
 
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Delete a carrier";
+        Description = "Permanently deletes a carrier and all its associated endpoints from the system.";
+        Response(204, "Carrier deleted successfully");
+        Response(404, "Carrier with the specified ID was not found");
+    }
+}
+
+public sealed record Request(Guid Id);
+
 public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
 {
     public override void Configure()
@@ -28,18 +41,5 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
         await appDbContext.SaveChangesAsync(ct);
 
         await Send.NoContentAsync(ct);
-    }
-}
-
-public sealed record Request(Guid Id);
-
-public class EndpointSummary : Summary<Endpoint>
-{
-    public EndpointSummary()
-    {
-        Summary = "Delete a carrier";
-        Description = "Permanently deletes a carrier and all its associated endpoints from the system.";
-        Response(204, "Carrier deleted successfully");
-        Response(404, "Carrier with the specified ID was not found");
     }
 }

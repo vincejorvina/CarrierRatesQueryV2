@@ -5,6 +5,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.Carriers.Update;
 
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Update a carrier";
+        Description = "Updates an existing carrier. Only the name and enabled status can be modified. Both fields are optional.";
+        ExampleRequest = new Request(Guid.Empty, "Updated Carrier Name", null);
+        Response(204, "Carrier updated successfully");
+        Response(400, "Validation failed - name exceeds 100 characters or is not unique");
+        Response(404, "Carrier with the specified ID was not found");
+    }
+}
+
+public sealed record Request(Guid Id, string? Name, bool? IsEnabled);
+
 public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
 {
     public override void Configure()
@@ -55,10 +70,8 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
         }
 
         await Send.NoContentAsync(ct);
-    }  
+    }
 }
-
-public sealed record Request(Guid Id, string? Name, bool? IsEnabled);
 
 public sealed class Validator : Validator<Request>
 {
@@ -79,18 +92,5 @@ public sealed class Validator : Validator<Request>
     {
         var exists = await _db.Carriers.AnyAsync(r => r.Name == name && r.Id != req.Id, ct);
         return !exists;
-    }
-}
-
-public class EndpointSummary : Summary<Endpoint>
-{
-    public EndpointSummary()
-    {
-        Summary = "Update a carrier";
-        Description = "Updates an existing carrier. Only the name and enabled status can be modified. Both fields are optional.";
-        ExampleRequest = new Request(Guid.Empty, "Updated Carrier Name", null);
-        Response(204, "Carrier updated successfully");
-        Response(400, "Validation failed - name exceeds 100 characters or is not unique");
-        Response(404, "Carrier with the specified ID was not found");
     }
 }

@@ -5,6 +5,31 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.DisableRequests.GetByCarrier;
 
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Get disable requests for a carrier";
+        Description = "Retrieves all disable requests for a specific carrier, ordered by most recently requested.";
+        Response(200, "Returns a list of disable requests for the carrier");
+        Response(400, "Bad request - missing or invalid X-Role header");
+        Response(404, "Carrier with the specified ID was not found");
+    }
+}
+
+public sealed record Request(Guid CarrierId);
+
+public sealed record Response(
+    Guid Id,
+    Guid CarrierId,
+    string RequestedBy,
+    string Reason,
+    string Status,
+    DateTime RequestedAtUtc,
+    string? ProcessedBy,
+    DateTime? ProcessedAtUtc
+);
+
 public sealed class Endpoint(
     AppDbContext appDbContext,
     IRequestRoleAccessor requestRoleAccessor) : Endpoint<Request, List<Response>>
@@ -42,30 +67,5 @@ public sealed class Endpoint(
         )).ToList();
 
         await Send.OkAsync(ct);
-    }
-}
-
-public sealed record Request(Guid CarrierId);
-
-public sealed record Response(
-    Guid Id,
-    Guid CarrierId,
-    string RequestedBy,
-    string Reason,
-    string Status,
-    DateTime RequestedAtUtc,
-    string? ProcessedBy,
-    DateTime? ProcessedAtUtc
-);
-
-public class EndpointSummary : Summary<Endpoint>
-{
-    public EndpointSummary()
-    {
-        Summary = "Get disable requests for a carrier";
-        Description = "Retrieves all disable requests for a specific carrier, ordered by most recently requested.";
-        Response(200, "Returns a list of disable requests for the carrier");
-        Response(400, "Bad request - missing or invalid X-Role header");
-        Response(404, "Carrier with the specified ID was not found");
     }
 }

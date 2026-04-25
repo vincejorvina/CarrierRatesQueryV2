@@ -7,6 +7,40 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.DisableRequests.Create;
 
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Create a disable request";
+        Description = "Creates a new request to disable a carrier. The request must be approved or rejected by an administrator before taking effect.";
+        ExampleRequest = new Request(Guid.Empty, "Carrier service degradation");
+        Response(201, "Disable request created successfully", example: new Response(
+            Guid.Empty,
+            Guid.Empty,
+            "admin",
+            "Carrier service degradation",
+            "Pending",
+            DateTime.UtcNow,
+            null,
+            null));
+        Response(400, "Bad request - missing X-Role header, missing X-Requested-By header, or empty reason");
+        Response(404, "Carrier with the specified ID was not found");
+    }
+}
+
+public sealed record Request(Guid CarrierId, string Reason);
+
+public sealed record Response(
+    Guid Id,
+    Guid CarrierId,
+    string RequestedBy,
+    string Reason,
+    string Status,
+    DateTime RequestedAtUtc,
+    string? ProcessedBy,
+    DateTime? ProcessedAtUtc
+);
+
 public sealed class Endpoint(
     AppDbContext appDbContext,
     IRequestRoleAccessor requestRoleAccessor) : Endpoint<Request, Response>
@@ -55,44 +89,10 @@ public sealed class Endpoint(
     }
 }
 
-public sealed record Request(Guid CarrierId, string Reason);
-
 public sealed class Validator : Validator<Request>
 {
     public Validator()
     {
         RuleFor(x => x.Reason).NotEmpty();
-    }
-}
-
-public sealed record Response(
-    Guid Id,
-    Guid CarrierId,
-    string RequestedBy,
-    string Reason,
-    string Status,
-    DateTime RequestedAtUtc,
-    string? ProcessedBy,
-    DateTime? ProcessedAtUtc
-);
-
-public class EndpointSummary : Summary<Endpoint>
-{
-    public EndpointSummary()
-    {
-        Summary = "Create a disable request";
-        Description = "Creates a new request to disable a carrier. The request must be approved or rejected by an administrator before taking effect.";
-        ExampleRequest = new Request(Guid.Empty, "Carrier service degradation");
-        Response(201, "Disable request created successfully", example: new Response(
-            Guid.Empty,
-            Guid.Empty,
-            "admin",
-            "Carrier service degradation",
-            "Pending",
-            DateTime.UtcNow,
-            null,
-            null));
-        Response(400, "Bad request - missing X-Role header, missing X-Requested-By header, or empty reason");
-        Response(404, "Carrier with the specified ID was not found");
     }
 }

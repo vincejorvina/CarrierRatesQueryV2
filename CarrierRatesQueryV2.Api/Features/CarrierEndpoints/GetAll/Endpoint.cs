@@ -5,6 +5,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.CarrierEndpoints.GetAll;
 
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Get all endpoints for a carrier";
+        Description = "Retrieves all endpoint configurations for a specific carrier.";
+        Response(200, "Returns a list of carrier endpoints");
+        Response(404, "Carrier with the specified ID was not found");
+    }
+}
+
+public sealed record Request(Guid CarrierId);
+
+public sealed record Response(Guid Id, Guid CarrierId, string Operation, string Endpoint);
+
 public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, List<Response>>
 {
     public override void Configure()
@@ -28,20 +43,5 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, List
 
         Response = endpoints.Select(e => new Response(e.Id, e.CarrierId, e.Operation, e.Endpoint)).ToList();
         await Send.OkAsync(ct);
-    }
-}
-
-public sealed record Request(Guid CarrierId);
-
-public sealed record Response(Guid Id, Guid CarrierId, string Operation, string Endpoint);
-
-public class EndpointSummary : Summary<Endpoint>
-{
-    public EndpointSummary()
-    {
-        Summary = "Get all endpoints for a carrier";
-        Description = "Retrieves all endpoint configurations for a specific carrier.";
-        Response(200, "Returns a list of carrier endpoints");
-        Response(404, "Carrier with the specified ID was not found");
     }
 }

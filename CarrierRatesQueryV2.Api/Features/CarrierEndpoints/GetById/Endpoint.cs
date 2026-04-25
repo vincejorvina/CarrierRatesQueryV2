@@ -5,6 +5,25 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.CarrierEndpoints.GetById;
 
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Get a carrier endpoint by ID";
+        Description = "Retrieves a single endpoint configuration for a carrier by its unique identifier.";
+        Response(200, "Returns the carrier endpoint", example: new Response(
+            Guid.Empty,
+            Guid.Empty,
+            "rate",
+            "https://api.carrier.com/rates"));
+        Response(404, "Carrier or endpoint with the specified IDs was not found");
+    }
+}
+
+public sealed record Request(Guid CarrierId, Guid EndpointId);
+
+public sealed record Response(Guid Id, Guid CarrierId, string Operation, string Endpoint);
+
 public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Response>
 {
     public override void Configure()
@@ -32,24 +51,5 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
 
         Response = new Response(endpoint.Id, endpoint.CarrierId, endpoint.Operation, endpoint.Endpoint);
         await Send.OkAsync(ct);
-    }
-}
-
-public sealed record Request(Guid CarrierId, Guid EndpointId);
-
-public sealed record Response(Guid Id, Guid CarrierId, string Operation, string Endpoint);
-
-public class EndpointSummary : Summary<Endpoint>
-{
-    public EndpointSummary()
-    {
-        Summary = "Get a carrier endpoint by ID";
-        Description = "Retrieves a single endpoint configuration for a carrier by its unique identifier.";
-        Response(200, "Returns the carrier endpoint", example: new Response(
-            Guid.Empty,
-            Guid.Empty,
-            "rate",
-            "https://api.carrier.com/rates"));
-        Response(404, "Carrier or endpoint with the specified IDs was not found");
     }
 }

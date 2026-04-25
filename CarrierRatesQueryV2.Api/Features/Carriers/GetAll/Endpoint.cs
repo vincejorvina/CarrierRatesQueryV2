@@ -5,16 +5,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.Carriers.GetAll;
 
-public sealed record Response(
-    Guid Id,
-    string Name,
-    string Slug,
-    bool IsEnabled,
-    DateTime CreatedAtUtc,
-    DateTime? UpdatedAtUtc = null,
-    List<CarrierEndpoint>? Endpoints = null
-);
-
 public class EndpointSummary : Summary<Endpoint>
 {
     public EndpointSummary()
@@ -24,6 +14,16 @@ public class EndpointSummary : Summary<Endpoint>
         Response(200, "Returns a list of all carriers");
     }
 }
+
+public sealed record Response(
+    Guid Id,
+    string Name,
+    string Slug,
+    bool IsEnabled,
+    DateTime CreatedAtUtc,
+    DateTime? UpdatedAtUtc = null,
+    List<CarrierEndpoint>? Endpoints = null
+);
 
 public sealed class Endpoint(AppDbContext appDbContext) : EndpointWithoutRequest<List<Response>>
 {
