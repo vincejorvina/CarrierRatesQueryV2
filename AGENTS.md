@@ -361,6 +361,62 @@ Configuration is in `AddCarrierHttpClient()` method.
 
 ---
 
+## Carrier Disable Flow
+
+### Business Rules
+
+The system validates carrier disable operations at **both** create and approve to prevent race conditions.
+
+**Validation runs on:**
+1. **Create** - disable request creation validates business rules early
+2. **Approve** - approval re-validates to handle race conditions
+
+**Key Logic:** When checking if a carrier can be disabled, the system accounts for **ALL pending disable requests**:
+
+```csharp
+var enabledCount = await db.Carriers.CountAsync(c => c.IsEnabled);
+var pendingRequestsForOtherCarriers = await db.DisableRequests
+    .Where(r => r.Status == DisableRequestStatus.Pending && r.CarrierId != carrierId)
+    .CountAsync();
+
+var enabledAfterThisDisable = enabledCount - 1 - pendingRequestsForOtherCarriers;
+```
+
+This prevents the race condition where multiple disable requests could leave zero enabled carriers when approved sequentially.
+
+**Service:** `ICarrierManagementService.ValidateCanDisableCarrierAsync()`
+
+---
+
+## Intentional Design Decisions
+
+The following were identified during code review but are **NOT bugs** - they are intentional design choices.
+
+### Cache Key Does Not Include Origin/Destination
+
+**Location:** `CarrierRatesQueryV2.Core/Rates/MemoryRateCache.cs`
+
+The cache key only includes package weight/dimensions and carrier configuration. Origin and destination are NOT included because:
+
+- The mock services (FedEx, DHL, UPS) only accept package weight/dimensions in their requests
+- Origin/destination are part of the API contract but are not passed to carrier APIs
+- Therefore, they do not affect the rate returned and should not be part of the cache key
+
+If switching to real carrier APIs that use origin/destination for rating, the cache key should be updated accordingly.
+
+### Enable Endpoint Has No Validation
+
+**Location:** `CarrierRatesQueryV2.Api/Features/Carriers/Enable/Endpoint.cs`
+
+The enable endpoint simply flips `IsEnabled = true` without validation. This is intentional:
+
+- Intended as an admin "switch" for quick enable/disable
+- The update endpoint already handles carrier modifications
+- Disabling is the operation with business rules (which are enforced)
+- Re-enabling a carrier has no business constraints
+
+---
+
 ## Final Notes
 
 - Do not try to simulate the full pipeline in unit tests

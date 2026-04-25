@@ -66,6 +66,7 @@ public class CarrierManagementService : ICarrierManagementService
             Id = Guid.NewGuid(),
             CarrierId = carrier.Id,
             Reason = reason,
+            ProcessedBy = processedBy,
             DisabledAtUtc = DateTime.UtcNow
         });
 
