@@ -1,6 +1,7 @@
 using CarrierRatesQueryV2.Api;
 using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Seeder;
+using CarrierRatesQueryV2.Data.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -13,7 +14,7 @@ public class IntegrationTestBase :
 {
     protected readonly TestWebApplicationFactory Factory;
     protected HttpClient Client = null!;
-    protected AppDbContext? DbContext;
+    public List<Carrier> SeededCarriers => Factory.SeededCarriers;
     
     protected IntegrationTestBase(TestWebApplicationFactory factory)
     {
@@ -25,11 +26,11 @@ public class IntegrationTestBase :
         Client = Factory.CreateClient();
         
         using var scope = Factory.Services.CreateScope();
-        DbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         
-        await DbContext.Database.EnsureDeletedAsync();
-        await DbContext.Database.EnsureCreatedAsync();
-        new DataSeeder(DbContext).Seed();
+        await db.Database.EnsureDeletedAsync();
+        await db.Database.EnsureCreatedAsync();
+        new DataSeeder(db).Seed();
     }
     
     public virtual Task DisposeAsync() => Task.CompletedTask;

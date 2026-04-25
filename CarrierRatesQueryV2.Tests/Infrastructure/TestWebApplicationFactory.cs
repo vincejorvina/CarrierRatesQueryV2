@@ -1,5 +1,6 @@
 using CarrierRatesQueryV2.Api;
 using CarrierRatesQueryV2.Data;
+using CarrierRatesQueryV2.Data.Entities;
 using CarrierRatesQueryV2.Data.Seeder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -10,6 +11,8 @@ namespace CarrierRatesQueryV2.Tests.Infrastructure;
 
 public class TestWebApplicationFactory : WebApplicationFactory<Program>
 {
+    public List<Carrier> SeededCarriers { get; private set; } = [];
+    
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureServices(services =>
@@ -27,7 +30,11 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         {
             using var scope = services.BuildServiceProvider().CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            new DataSeeder(db).Seed();
+            
+            var seeder = new DataSeeder(db);
+            seeder.Seed();
+            
+            SeededCarriers = db.Carriers.Include(c => c.Endpoints).ToList();
         });
     }
 }
