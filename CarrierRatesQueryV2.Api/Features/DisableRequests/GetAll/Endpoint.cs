@@ -47,3 +47,14 @@ public sealed record Response(
     string? ProcessedBy,
     DateTime? ProcessedAtUtc
 );
+
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Get all disable requests";
+        Description = "Retrieves all disable requests in the system, ordered by most recently requested.";
+        Response(200, "Returns a list of all disable requests");
+        Response(400, "Bad request - missing or invalid X-Role header");
+    }
+}

@@ -105,3 +105,18 @@ public sealed record Response(
     DateTime? UpdatedAtUtc = null,
     List<CarrierRatesQueryV2.Data.Entities.CarrierEndpoint>? Endpoints = null
 );
+
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Disable a carrier";
+        Description = "Immediately disables a carrier without requiring a disable request. Only administrators can use this endpoint. For regular users, use the disable request flow instead.";
+        ExampleRequest = new Request(Guid.Empty, "Scheduled maintenance");
+        Response(200, "Carrier has been disabled");
+        Response(400, "Bad request - missing X-Role header, invalid X-Role value, or missing reason");
+        Response(403, "Forbidden - only administrators can directly disable carriers");
+        Response(404, "Carrier with the specified ID was not found");
+        Response(409, "Conflict - cannot disable the only enabled carrier");
+    }
+}

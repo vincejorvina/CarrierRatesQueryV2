@@ -64,3 +64,20 @@ public sealed class Validator : Validator<Request>
         return !exists;
     }
 }
+
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Create a new carrier";
+        Description = "Creates a new carrier in the system. The carrier name must be unique and no longer than 100 characters.";
+        ExampleRequest = new Request("FedEx Ground", true);
+        Response(201, "Carrier created successfully", example: new Response(
+            Guid.Empty,
+            "FedEx Ground",
+            "fedex-ground",
+            true,
+            DateTime.UtcNow));
+        Response(400, "Validation failed - name is required, exceeds 100 characters, or is not unique");
+    }
+}

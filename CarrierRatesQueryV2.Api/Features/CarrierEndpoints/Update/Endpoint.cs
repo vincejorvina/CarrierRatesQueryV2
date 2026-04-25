@@ -53,3 +53,20 @@ public sealed class Validator : Validator<Request>
 }
 
 public sealed record Response(Guid Id, Guid CarrierId, string Operation, string Endpoint);
+
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Update a carrier endpoint";
+        Description = "Updates an existing endpoint configuration for a carrier.";
+        ExampleRequest = new Request(Guid.Empty, Guid.Empty, "rate", "https://api.carrier.com/v2/rates");
+        Response(200, "Endpoint updated successfully", example: new Response(
+            Guid.Empty,
+            Guid.Empty,
+            "rate",
+            "https://api.carrier.com/v2/rates"));
+        Response(400, "Validation failed - operation or endpoint URL is empty");
+        Response(404, "Carrier or endpoint with the specified IDs was not found");
+    }
+}

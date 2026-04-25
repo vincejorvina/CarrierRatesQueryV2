@@ -74,3 +74,24 @@ public sealed record Response(
     string? ProcessedBy,
     DateTime? ProcessedAtUtc
 );
+
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Reject a disable request";
+        Description = "Rejects a pending disable request. Only administrators can reject requests.";
+        Response(200, "Disable request rejected", example: new Response(
+            Guid.Empty,
+            Guid.Empty,
+            "admin",
+            "Carrier service degradation",
+            "Rejected",
+            DateTime.UtcNow,
+            "admin",
+            DateTime.UtcNow));
+        Response(400, "Bad request - missing or invalid X-Role header, or request is not in pending status");
+        Response(403, "Forbidden - only administrators can reject disable requests");
+        Response(404, "Disable request with the specified ID was not found");
+    }
+}

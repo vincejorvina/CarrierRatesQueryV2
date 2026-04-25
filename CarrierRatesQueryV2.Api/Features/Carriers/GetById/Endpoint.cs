@@ -50,3 +50,14 @@ public sealed record Response(
     DateTime? UpdatedAtUtc = null,
     List<CarrierEndpoint>? Endpoints = null
 );
+
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Get a carrier by ID";
+        Description = "Retrieves a single carrier by its unique identifier, including its endpoints configuration.";
+        Response(200, "Returns the carrier");
+        Response(404, "Carrier with the specified ID was not found");
+    }
+}

@@ -49,3 +49,22 @@ public sealed record Response(
     string? ProcessedBy,
     DateTime? ProcessedAtUtc
 );
+
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Get a disable request by ID";
+        Description = "Retrieves a single disable request by its unique identifier.";
+        Response(200, "Returns the disable request", example: new Response(
+            Guid.Empty,
+            Guid.Empty,
+            "admin",
+            "Carrier service degradation",
+            "Pending",
+            DateTime.UtcNow,
+            null,
+            null));
+        Response(404, "Disable request with the specified ID was not found");
+    }
+}

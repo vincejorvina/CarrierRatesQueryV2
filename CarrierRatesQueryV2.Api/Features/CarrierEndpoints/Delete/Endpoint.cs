@@ -39,3 +39,14 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
 }
 
 public sealed record Request(Guid CarrierId, Guid EndpointId);
+
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Delete a carrier endpoint";
+        Description = "Permanently deletes an endpoint configuration from a carrier.";
+        Response(204, "Endpoint deleted successfully");
+        Response(404, "Carrier or endpoint with the specified IDs was not found");
+    }
+}

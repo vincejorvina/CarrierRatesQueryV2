@@ -57,3 +57,15 @@ public sealed record Response(
     string? ProcessedBy,
     DateTime? ProcessedAtUtc
 );
+
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Get disable requests for a carrier";
+        Description = "Retrieves all disable requests for a specific carrier, ordered by most recently requested.";
+        Response(200, "Returns a list of disable requests for the carrier");
+        Response(400, "Bad request - missing or invalid X-Role header");
+        Response(404, "Carrier with the specified ID was not found");
+    }
+}

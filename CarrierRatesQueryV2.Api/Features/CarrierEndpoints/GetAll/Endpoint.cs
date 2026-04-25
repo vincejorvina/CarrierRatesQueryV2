@@ -34,3 +34,14 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, List
 public sealed record Request(Guid CarrierId);
 
 public sealed record Response(Guid Id, Guid CarrierId, string Operation, string Endpoint);
+
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Get all endpoints for a carrier";
+        Description = "Retrieves all endpoint configurations for a specific carrier.";
+        Response(200, "Returns a list of carrier endpoints");
+        Response(404, "Carrier with the specified ID was not found");
+    }
+}

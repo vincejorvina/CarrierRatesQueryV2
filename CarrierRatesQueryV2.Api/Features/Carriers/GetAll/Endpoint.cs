@@ -15,6 +15,16 @@ public sealed record Response(
     List<CarrierEndpoint>? Endpoints = null
 );
 
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Get all carriers";
+        Description = "Retrieves a list of all carriers in the system, ordered by name. Each carrier includes its endpoints configuration.";
+        Response(200, "Returns a list of all carriers");
+    }
+}
+
 public sealed class Endpoint(AppDbContext appDbContext) : EndpointWithoutRequest<List<Response>>
 {
     public override void Configure()

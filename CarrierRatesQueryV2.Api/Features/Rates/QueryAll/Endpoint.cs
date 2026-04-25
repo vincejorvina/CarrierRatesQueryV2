@@ -115,3 +115,18 @@ public sealed record RateQuoteResponse(string Carrier, IReadOnlyList<RateOptionR
 public sealed record RateOptionResponse(string ServiceName, DateTime EstimatedDelivery, MoneyResponse Price);
 
 public sealed record MoneyResponse(decimal Amount, string Currency);
+
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Query rates from all carriers";
+        Description = "Queries shipping rates from all enabled carriers in the system. Returns a list of rate quotes from each carrier that can provide rates for the given shipment details.";
+        ExampleRequest = new Request(
+            new LocationRequest("90210", "US"),
+            new LocationRequest("10001", "US"),
+            new PackageRequest(10m, new PackageDimensionsRequest(10m, 8m, 6m)));
+        Response(200, "Returns available shipping rates from all enabled carriers");
+        Response(400, "Validation failed - missing or invalid request fields");
+    }
+}

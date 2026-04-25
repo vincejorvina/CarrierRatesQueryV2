@@ -81,3 +81,16 @@ public sealed class Validator : Validator<Request>
         return !exists;
     }
 }
+
+public class EndpointSummary : Summary<Endpoint>
+{
+    public EndpointSummary()
+    {
+        Summary = "Update a carrier";
+        Description = "Updates an existing carrier. Only the name and enabled status can be modified. Both fields are optional.";
+        ExampleRequest = new Request(Guid.Empty, "Updated Carrier Name", null);
+        Response(204, "Carrier updated successfully");
+        Response(400, "Validation failed - name exceeds 100 characters or is not unique");
+        Response(404, "Carrier with the specified ID was not found");
+    }
+}
