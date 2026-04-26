@@ -34,7 +34,7 @@ API directly: http://localhost:5117/swagger
 
 | Endpoint                                   | Description                           |
 |--------------------------------------------|---------------------------------------|
-| `POST /api/v1/rates`                          | Query rates from all enabled carriers |
+| `POST /api/v1/rates`                          | Query rates from all enabled carriers (expects SI units: weight in kg, dimensions in cm) |
 | `GET /api/v1/carriers`                        | List carriers                         |
 | `POST /api/v1/carriers`                       | Create carrier                        |
 | `PATCH /api/v1/carriers/{id}/enable`          | Enable carrier                        |

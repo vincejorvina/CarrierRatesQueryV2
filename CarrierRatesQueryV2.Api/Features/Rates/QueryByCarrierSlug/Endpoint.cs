@@ -7,23 +7,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.Rates.QueryByCarrierSlug;
 
-public class EndpointSummary : Summary<Endpoint>
-{
-    public EndpointSummary()
-    {
-        Summary = "Query rates by carrier slug";
-        Description = "Queries shipping rates for a specific carrier using its URL-friendly slug identifier. Only returns rates for enabled carriers with an available rate strategy.";
-        ExampleRequest = new Request(
-            "fedex-ground",
-            new LocationRequest("90210", "US"),
-            new LocationRequest("10001", "US"),
-            new PackageRequest(10m, new PackageDimensionsRequest(10m, 8m, 6m)));
-        Response(200, "Returns available shipping rates for the carrier");
-        Response(400, "Validation failed - missing or invalid request fields");
-        Response(404, "Carrier with the specified slug was not found");
-        Response(409, "Carrier is disabled, no rate strategy found, or no rates available");
-    }
-}
+ public class EndpointSummary : Summary<Endpoint>
+ {
+     public EndpointSummary()
+     {
+         Summary = "Query rates by carrier slug";
+         Description = "Queries shipping rates for a specific carrier by its slug (URL-friendly name). Returns rate quotes from the specified carrier if it is enabled and can provide rates for the given shipment details. (Expects SI units: weight in kilograms, dimensions in centimeters)";
+         ExampleRequest = new Request(
+             "fedex",
+             new LocationRequest("90210", "US"),
+             new LocationRequest("10001", "US"),
+             new PackageRequest(10m, new PackageDimensionsRequest(10m, 8m, 6m)));
+         Response(200, "Returns available shipping rates from the specified carrier");
+         Response(400, "Validation failed - missing or invalid request fields");
+         Response(404, "Carrier with the specified slug was not found");
+         Response(409, "Conflict - carrier is not enabled");
+      }
+  }
 
 public sealed record Request(string CarrierSlug, LocationRequest Origin, LocationRequest Destination, PackageRequest Package)
 {
