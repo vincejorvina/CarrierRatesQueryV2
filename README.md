@@ -28,15 +28,15 @@ Access at http://localhost:5133
 
 ## API Endpoints
 
-| Endpoint | Description |
-|----------|-------------|
-| `POST /api/rates` | Query rates from all enabled carriers |
-| `GET /api/carriers` | List carriers |
-| `POST /api/carriers` | Create carrier |
-| `PATCH /api/carriers/{id}/enable` | Enable carrier (admin) |
-| `PATCH /api/carriers/{id}/disable` | Disable carrier immediately (admin) |
-| `POST /api/carriers/{id}/disable-requests` | Request carrier disable |
-| `PATCH /api/disable-requests/{id}/approve` | Approve disable request (admin) |
+| Endpoint                                   | Description                           |
+|--------------------------------------------|---------------------------------------|
+| `POST /api/rates`                          | Query rates from all enabled carriers |
+| `GET /api/carriers`                        | List carriers                         |
+| `POST /api/carriers`                       | Create carrier                        |
+| `PATCH /api/carriers/{id}/enable`          | Enable carrier (admin)                |
+| `PATCH /api/carriers/{id}/disable`         | Disable carrier immediately (admin)   |
+| `POST /api/carriers/{id}/disable-requests` | Request carrier disable               |
+| `PATCH /api/disable-requests/{id}/approve` | Approve disable request (admin)       |
 
 ## Architecture
 
@@ -48,7 +48,8 @@ Access at http://localhost:5133
 ## Documentation
 
 - Quick guide: This file
-- Technical details: [ARCHITECTURE.md](./ARCHITECTURE.md)
+- Technical details: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
+- Adding carriers: [docs/CARRIER_IMPLEMENTATION.md](./docs/CARRIER_IMPLEMENTATION.md)
 - AI agent instructions: [AGENTS.md](./AGENTS.md)
 
 ## Testing

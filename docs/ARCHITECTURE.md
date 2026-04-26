@@ -1,6 +1,6 @@
 # Architecture & Technical Details
 
-For quickstart, see [README.md](./README.md).
+For quickstart, see [README.md](../README.md).
 
 ---
 
@@ -54,7 +54,7 @@ Response
 
 ## Testing Strategy
 
-Three distinct layers - see [AGENTS.md](./AGENTS.md) for full details.
+Three distinct layers - see [AGENTS.md](../AGENTS.md) for full details.
 
 ### Unit Tests
 Use `Factory.Create<TEndpoint>()` - tests endpoint behavior in isolation.
@@ -146,4 +146,4 @@ Designed as quick admin "switch" - re-enabling is always safe.
 
 ---
 
-For full technical details for AI agents, see [AGENTS.md](./AGENTS.md).
+For full technical details for AI agents, see [AGENTS.md](../AGENTS.md).

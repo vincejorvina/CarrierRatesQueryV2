@@ -34,6 +34,13 @@ Each feature is self-contained:
 - Treat validation as a **boundary concern**
 - Use **dependency injection** for all services
 - Avoid cross-feature coupling
+- Follow the **carrier implementation pattern** when adding new carriers
+
+---
+
+## Adding New Carriers
+
+See [docs/CARRIER_IMPLEMENTATION.md](./docs/CARRIER_IMPLEMENTATION.md) for the step-by-step guide.
 
 ---
 
