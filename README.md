@@ -6,6 +6,8 @@
 
 A .NET 8 Web API that aggregates shipping rates from multiple carriers (FedEx, UPS, DHL).
 
+> **Note:** The original assessment package included sample files (`products.json`, `suppliers.json`) that are **believed to be unrelated** - they contain e-commerce product/supplier data for a different assessment.
+
 ## Quick Start
 
 ```bash
