@@ -81,9 +81,8 @@ public sealed class Endpoint(
             .ToListAsync(ct);
 
         var query = req.ToRateQuery();
-        var results = new List<RateQuoteResponse>();
 
-        foreach (var carrier in carriers)
+        var tasks = carriers.Select(async carrier =>
         {
             var carrierContext = new CarrierContext(
                 Id: carrier.Id,
@@ -94,17 +93,18 @@ public sealed class Endpoint(
 
             if (!carrierRateStrategyResolver.TryResolve(carrierContext.Slug, out var strategy))
             {
-                continue;
+                return (ShippingRateQuote?)null;
             }
 
-            var quote = await strategy.TryGetRatesAsync(carrierContext, query, ct);
-            if (quote is null)
-            {
-                continue;
-            }
+            return await strategy.TryGetRatesAsync(carrierContext, query, ct);
+        });
 
-            results.Add(RateQuoteResponse.FromQuote(quote));
-        }
+        var quotes = await Task.WhenAll(tasks);
+
+        var results = quotes
+            .Where(q => q is not null)
+            .Select(q => RateQuoteResponse.FromQuote(q!))
+            .ToList();
 
         await Send.OkAsync(results, ct);
     }
