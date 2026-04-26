@@ -144,6 +144,25 @@ The mock services only accept package weight/dimensions - origin/destination are
 ### Enable Endpoint Has No Validation
 Designed as quick admin "switch" - re-enabling is always safe.
 
+### Admin Authorization (X-Role Header)
+API endpoints use an `X-Role` header to distinguish admins from regular users:
+- `X-Role: Admin` - full access (can disable carriers, approve disable requests)
+- `X-Role: User` - read-only + can request carrier disable
+
+This is a **demonstration auth pattern**, not production security. Real deployments would use JWT, OAuth2, or similar.
+
+### Carrier Configuration
+The system stores carrier endpoint URLs but not API keys or credentials:
+- Endpoint URLs point to mock services (local Proof of Concept)
+- Real carrier APIs would require credential storage (API keys, secrets, etc.)
+- Current design demonstrates integration capability without external dependencies
+
+### Local Mock Services
+FedEx, DHL, and UPS have local mock implementations:
+- Simulate carrier API responses without external network calls
+- Rates are calculated from package weight/dimensions
+- Response format mirrors real carrier APIs for demonstration
+
 ---
 
 For full technical details for AI agents, see [AGENTS.md](../AGENTS.md).
