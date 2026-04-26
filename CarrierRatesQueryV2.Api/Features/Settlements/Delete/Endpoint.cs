@@ -1,6 +1,7 @@
 using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.Settlements.Delete;
 
@@ -27,7 +28,9 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var settlement = await appDbContext.CarrierFinancialSettlements.FindAsync([req.SettlementId], ct);
+        var settlement = await appDbContext.CarrierFinancialSettlements
+            .AsTracking()
+            .FirstOrDefaultAsync(s => s.Id == req.SettlementId, ct);
         if (settlement == null)
         {
             await Send.NotFoundAsync(ct);

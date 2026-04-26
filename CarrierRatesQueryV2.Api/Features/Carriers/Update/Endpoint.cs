@@ -10,7 +10,7 @@ public class EndpointSummary : Summary<Endpoint>
     public EndpointSummary()
     {
         Summary = "Update a carrier";
-        Description = "Updates an existing carrier. Only the name and enabled status can be modified. Both fields are optional.";
+        Description = "Updates an existing carrier. Name can be modified here; enabling is allowed, but disabling must use the disable endpoint or disable-request workflow.";
         ExampleRequest = new Request(Guid.Empty, "Updated Carrier Name", null);
         Response(204, "Carrier updated successfully");
         Response(400, "Validation failed - name exceeds 100 characters or is not unique");
@@ -51,6 +51,12 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
 
         if (req.IsEnabled.HasValue)
         {
+            if (req.IsEnabled.Value == false && carrier.IsEnabled)
+            {
+                ThrowError("Use the carrier disable endpoint or disable-request workflow to disable carriers.", 400);
+                return;
+            }
+
             carrier.IsEnabled = req.IsEnabled.Value;
         }
 

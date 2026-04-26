@@ -48,6 +48,7 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
         var carrier = await appDbContext.Carriers
+            .AsTracking()
             .Include(c => c.Endpoints)
             .FirstOrDefaultAsync(c => c.Id == req.Id, ct);
 

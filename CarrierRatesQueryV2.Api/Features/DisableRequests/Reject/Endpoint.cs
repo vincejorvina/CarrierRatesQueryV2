@@ -62,6 +62,7 @@ public sealed class Endpoint(
         var processedBy = requestRoleAccessor.GetRequestedBy();
 
         var disableRequest = await appDbContext.DisableRequests
+            .AsTracking()
             .FirstOrDefaultAsync(r => r.Id == req.DisableRequestId, ct);
 
         if (disableRequest == null)

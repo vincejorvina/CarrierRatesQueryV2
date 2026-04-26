@@ -1,6 +1,7 @@
 using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
+using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.Shipments.Delete;
 
@@ -27,7 +28,9 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var shipment = await appDbContext.Shipments.FindAsync([req.ShipmentId], ct);
+        var shipment = await appDbContext.Shipments
+            .AsTracking()
+            .FirstOrDefaultAsync(s => s.Id == req.ShipmentId, ct);
         if (shipment == null)
         {
             await Send.NotFoundAsync(ct);

@@ -14,7 +14,9 @@ cd CarrierRatesQueryV2
 dotnet run --project CarrierRatesQueryV2.AppHost
 ```
 
-Access at http://localhost:5133
+Aspire dashboard: http://localhost:15074
+
+API directly: http://localhost:5117/swagger
 
 ## Features
 
@@ -30,13 +32,13 @@ Access at http://localhost:5133
 
 | Endpoint                                   | Description                           |
 |--------------------------------------------|---------------------------------------|
-| `POST /api/rates`                          | Query rates from all enabled carriers |
-| `GET /api/carriers`                        | List carriers                         |
-| `POST /api/carriers`                       | Create carrier                        |
-| `PATCH /api/carriers/{id}/enable`          | Enable carrier (admin)                |
-| `PATCH /api/carriers/{id}/disable`         | Disable carrier immediately (admin)   |
-| `POST /api/carriers/{id}/disable-requests` | Request carrier disable               |
-| `PATCH /api/disable-requests/{id}/approve` | Approve disable request (admin)       |
+| `POST /api/v1/rates`                          | Query rates from all enabled carriers |
+| `GET /api/v1/carriers`                        | List carriers                         |
+| `POST /api/v1/carriers`                       | Create carrier                        |
+| `PATCH /api/v1/carriers/{id}/enable`          | Enable carrier                        |
+| `PATCH /api/v1/carriers/{id}/disable`         | Disable carrier immediately (admin)   |
+| `POST /api/v1/carriers/{id}/disable-requests` | Request carrier disable               |
+| `PATCH /api/v1/disable-requests/{id}/approve` | Approve disable request (admin)       |
 
 ## Architecture
 

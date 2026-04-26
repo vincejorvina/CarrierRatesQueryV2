@@ -49,7 +49,7 @@ public class UpdateCarrierHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsync_UpdateIsEnabled_ShouldUpdateCarrier()
+    public async Task HandleAsync_EnableDisabledCarrier_ShouldUpdateCarrier()
     {
         var db = CreateDbContext();
         var carrierId = Guid.NewGuid();
@@ -57,19 +57,19 @@ public class UpdateCarrierHandlerTests
         {
             Id = carrierId,
             Name = "Test Carrier",
-            IsEnabled = true,
+            IsEnabled = false,
             CreatedAtUtc = DateTime.UtcNow
         });
         await db.SaveChangesAsync();
 
         var endpoint = CreateEndpoint(db);
-        var request = new Request(carrierId, null, false);
+        var request = new Request(carrierId, null, true);
 
         await endpoint.HandleAsync(request, CancellationToken.None);
 
         var updatedCarrier = await db.Carriers.FirstOrDefaultAsync(c => c.Id == carrierId);
         updatedCarrier.ShouldNotBeNull();
-        updatedCarrier.IsEnabled.ShouldBe(false);
+        updatedCarrier.IsEnabled.ShouldBe(true);
     }
 
     [Fact]
@@ -85,7 +85,7 @@ public class UpdateCarrierHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsync_UpdateBothFields_ShouldUpdateCarrier()
+    public async Task HandleAsync_DisableEnabledCarrier_ShouldThrowError()
     {
         var db = CreateDbContext();
         var carrierId = Guid.NewGuid();
@@ -101,11 +101,12 @@ public class UpdateCarrierHandlerTests
         var endpoint = CreateEndpoint(db);
         var request = new Request(carrierId, "New Name", false);
 
-        await endpoint.HandleAsync(request, CancellationToken.None);
+        await Should.ThrowAsync<FastEndpoints.ValidationFailureException>(async () =>
+            await endpoint.HandleAsync(request, CancellationToken.None));
 
         var updatedCarrier = await db.Carriers.FirstOrDefaultAsync(c => c.Id == carrierId);
         updatedCarrier.ShouldNotBeNull();
-        updatedCarrier.Name.ShouldBe("New Name");
-        updatedCarrier.IsEnabled.ShouldBe(false);
+        updatedCarrier.Name.ShouldBe("Old Name");
+        updatedCarrier.IsEnabled.ShouldBe(true);
     }
 }

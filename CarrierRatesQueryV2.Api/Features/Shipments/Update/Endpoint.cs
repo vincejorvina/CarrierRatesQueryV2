@@ -33,7 +33,9 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var shipment = await appDbContext.Shipments.FindAsync([req.Id], ct);
+        var shipment = await appDbContext.Shipments
+            .AsTracking()
+            .FirstOrDefaultAsync(s => s.Id == req.Id, ct);
         if (shipment == null)
         {
             await Send.NotFoundAsync(ct);
