@@ -47,6 +47,47 @@ API directly: http://localhost:5117/swagger
 - **Adapter Pattern** - Response normalization
 - **Vertical Slice** - Feature organization
 
+## Carrier API Contracts
+
+The mock carrier APIs conform to the assessment payload specifications:
+
+### FedEx
+```json
+POST /api/fedex/rates
+{
+  "origin": { "postalCode": "12345", "countryCode": "US" },
+  "destination": { "postalCode": "67890", "countryCode": "US" },
+  "package": { "weight": 5, "dimensions": { "length": 10, "width": 5, "height": 5 } }
+}
+```
+
+### DHL
+```json
+POST /api/dhl/rates
+{
+  "from": { "zipCode": "12345", "country": "US" },
+  "to": { "zipCode": "67890", "country": "US" },
+  "parcel": { "weightKg": 5, "sizeCm": { "length": 10, "width": 5, "height": 5 } }
+}
+```
+
+### UPS
+```json
+POST /api/ups/shipping-rates
+{
+  "shipment": {
+    "originPostalCode": "12345",
+    "destinationPostalCode": "67890",
+    "originCountryCode": "US",
+    "destinationCountryCode": "US",
+    "weightLbs": 11,
+    "dimensionsInches": { "length": 10, "width": 5, "height": 5 }
+  }
+}
+```
+
+Note: Origin/destination are accepted per API contract but do not affect rate calculations in the mock services.
+
 ## Documentation
 
 - Quick guide: This file
