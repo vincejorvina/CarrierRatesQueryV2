@@ -51,4 +51,42 @@ public class CarrierFailureTrackerTests
 
         tracker.IsCarrierFailing("ups").ShouldBeFalse();
     }
+
+    [Fact]
+    public void RecordFailure_MultipleFailures_StillReturnsTrue()
+    {
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var tracker = new CarrierFailureTracker(cache);
+
+        tracker.RecordFailure("fedex");
+        tracker.RecordFailure("fedex");
+        tracker.RecordFailure("fedex");
+
+        tracker.IsCarrierFailing("fedex").ShouldBeTrue();
+    }
+
+    [Fact]
+    public void IsCarrierFailing_MultipleCarriers_TrackedIndependently()
+    {
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var tracker = new CarrierFailureTracker(cache);
+
+        tracker.RecordFailure("fedex");
+        tracker.RecordFailure("ups");
+        tracker.RecordSuccess("ups");
+
+        tracker.IsCarrierFailing("fedex").ShouldBeTrue();
+        tracker.IsCarrierFailing("ups").ShouldBeFalse();
+    }
+
+    [Fact]
+    public void RecordSuccess_NotPreviouslyFailed_DoesNotThrow()
+    {
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var tracker = new CarrierFailureTracker(cache);
+
+        tracker.RecordSuccess("fedex");
+
+        tracker.IsCarrierFailing("fedex").ShouldBeFalse();
+    }
 }
