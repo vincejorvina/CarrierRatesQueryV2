@@ -30,10 +30,16 @@ public sealed class UpsRateStrategy(
         }
 
         var upsRequest = new MockUpsRateRequest(
-            query.Package.Weight,
-            query.Package.Dimensions.Length,
-            query.Package.Dimensions.Width,
-            query.Package.Dimensions.Height);
+            new UpsShipment(
+                query.Origin.PostalCode,
+                query.Destination.PostalCode,
+                query.Origin.CountryCode,
+                query.Destination.CountryCode,
+                query.Package.Weight * 2.20462m,
+                new UpsDimensionsInches(
+                    query.Package.Dimensions.Length * 0.393701m,
+                    query.Package.Dimensions.Width * 0.393701m,
+                    query.Package.Dimensions.Height * 0.393701m)));
 
         var response = await mockUpsRatesClient.GetRatesAsync(endpoint.Endpoint, upsRequest, cancellationToken);
         var quote = upsRateAdapter.Adapt(response);

@@ -1,6 +1,10 @@
 namespace CarrierRatesQueryV2.Core.Rates.Clients;
 
-public sealed record MockFedExRateRequest(MockFedExPackage Package);
+public sealed record MockFedExRateRequest(MockFedExOrigin Origin, MockFedExDestination Destination, MockFedExPackage Package);
+
+public sealed record MockFedExOrigin(string PostalCode, string CountryCode);
+
+public sealed record MockFedExDestination(string PostalCode, string CountryCode);
 
 public sealed record MockFedExPackage(decimal Weight, MockFedExDimensions Dimensions);
 

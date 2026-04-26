@@ -30,6 +30,12 @@ public sealed class FedExRateStrategy(
         }
 
         var fedExRequest = new MockFedExRateRequest(
+            new MockFedExOrigin(
+                query.Origin.PostalCode,
+                query.Origin.CountryCode),
+            new MockFedExDestination(
+                query.Destination.PostalCode,
+                query.Destination.CountryCode),
             new MockFedExPackage(
                 query.Package.Weight,
                 new MockFedExDimensions(
