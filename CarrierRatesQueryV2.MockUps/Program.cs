@@ -21,8 +21,10 @@ app.UseHttpsRedirection();
 
 app.MapPost("/api/ups/shipping-rates", ([FromBody] MockUpsRateRequest request) =>
 {
-    var weightMultiplier = Math.Max(request.Weight, 1m) * 0.18m;
-    var volume = Math.Max(request.Length * request.Width * request.Height, 1m);
+    var shipment = request.Shipment;
+    var weightMultiplier = Math.Max(shipment.WeightLbs, 1m) * 0.18m;
+    var dims = shipment.DimensionsInches;
+    var volume = Math.Max(dims.Length * dims.Width * dims.Height, 1m);
     var dimensionMultiplier = volume * 0.0025m;
     var packageSurcharge = weightMultiplier + dimensionMultiplier;
 
@@ -58,3 +60,15 @@ app.MapPost("/api/ups/shipping-rates", ([FromBody] MockUpsRateRequest request) =
 .WithOpenApi();
 
 await app.RunAsync();
+
+public sealed record MockUpsRateRequest(UpsShipment Shipment);
+
+public sealed record UpsShipment(
+    string OriginPostalCode,
+    string DestinationPostalCode,
+    string OriginCountryCode,
+    string DestinationCountryCode,
+    decimal WeightLbs,
+    UpsDimensionsInches DimensionsInches);
+
+public sealed record UpsDimensionsInches(decimal Length, decimal Width, decimal Height);

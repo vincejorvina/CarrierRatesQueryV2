@@ -56,7 +56,11 @@ app.MapPost("/api/fedex/rates", ([FromBody] FedExRateRequest request) =>
 
 await app.RunAsync();
 
-public sealed record FedExRateRequest(FedExPackage Package);
+public sealed record FedExRateRequest(FedExOrigin Origin, FedExDestination Destination, FedExPackage Package);
+
+public sealed record FedExOrigin(string PostalCode, string CountryCode);
+
+public sealed record FedExDestination(string PostalCode, string CountryCode);
 
 public sealed record FedExPackage(decimal Weight, FedExDimensions Dimensions);
 

@@ -30,10 +30,18 @@ public sealed class DhlRateStrategy(
         }
 
         var dhlRequest = new MockDhlRateRequest(
-            query.Package.Weight,
-            query.Package.Dimensions.Length,
-            query.Package.Dimensions.Width,
-            query.Package.Dimensions.Height);
+            new DhlFrom(
+                query.Origin.PostalCode,
+                query.Origin.CountryCode),
+            new DhlTo(
+                query.Destination.PostalCode,
+                query.Destination.CountryCode),
+            new DhlParcel(
+                query.Package.Weight,
+                new DhlSizeCm(
+                    query.Package.Dimensions.Length,
+                    query.Package.Dimensions.Width,
+                    query.Package.Dimensions.Height)));
 
         var response = await mockDhlRatesClient.GetRatesAsync(endpoint.Endpoint, dhlRequest, cancellationToken);
         var quote = dhlRateAdapter.Adapt(response);

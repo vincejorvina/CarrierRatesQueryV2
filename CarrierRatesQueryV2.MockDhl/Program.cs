@@ -21,8 +21,9 @@ app.UseHttpsRedirection();
 
 app.MapPost("/api/dhl/rates", ([FromBody] MockDhlRateRequest request) =>
 {
-    var weightMultiplier = Math.Max(request.Weight, 1m) * 0.20m;
-    var volume = Math.Max(request.Length * request.Width * request.Height, 1m);
+    var weightMultiplier = Math.Max(request.Parcel.WeightKg, 1m) * 0.20m;
+    var size = request.Parcel.SizeCm;
+    var volume = Math.Max(size.Length * size.Width * size.Height, 1m);
     var dimensionMultiplier = volume * 0.003m;
     var packageSurcharge = weightMultiplier + dimensionMultiplier;
 
@@ -58,3 +59,13 @@ app.MapPost("/api/dhl/rates", ([FromBody] MockDhlRateRequest request) =>
 .WithOpenApi();
 
 await app.RunAsync();
+
+public sealed record MockDhlRateRequest(DhlFrom From, DhlTo To, DhlParcel Parcel);
+
+public sealed record DhlFrom(string ZipCode, string Country);
+
+public sealed record DhlTo(string ZipCode, string Country);
+
+public sealed record DhlParcel(decimal WeightKg, DhlSizeCm SizeCm);
+
+public sealed record DhlSizeCm(decimal Length, decimal Width, decimal Height);
