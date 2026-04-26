@@ -1,6 +1,7 @@
 using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.Shipments.Update;
@@ -50,5 +51,23 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
 
         var response = new Response(shipment.Id, shipment.CarrierId, shipment.Status.ToString(), shipment.CreatedAtUtc);
         await Send.OkAsync(response, ct);
+    }
+}
+
+public sealed class Validator : Validator<Request>
+{
+    private static readonly string[] ValidStatuses = ["Pending", "Completed"];
+
+    public Validator()
+    {
+        RuleFor(x => x.Id)
+            .NotEmpty()
+            .WithMessage("Id is required");
+
+        RuleFor(x => x.Status)
+            .NotEmpty()
+            .WithMessage("Status is required")
+            .Must(status => ValidStatuses.Contains(status, StringComparer.OrdinalIgnoreCase))
+            .WithMessage($"Invalid status. Valid values: {string.Join(", ", ValidStatuses)}");
     }
 }

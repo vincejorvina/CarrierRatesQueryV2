@@ -1,6 +1,7 @@
 using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Entities;
 using FastEndpoints;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 
 namespace CarrierRatesQueryV2.Api.Features.Shipments.Create;
@@ -51,5 +52,26 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
 
         var response = new Response(shipment.Id, shipment.CarrierId, shipment.Status.ToString(), shipment.CreatedAtUtc);
         await Send.ResponseAsync(response, 201, ct);
+    }
+}
+
+public sealed class Validator : Validator<Request>
+{
+    private readonly AppDbContext _db;
+
+    public Validator(AppDbContext db)
+    {
+        _db = db;
+
+        RuleFor(x => x.CarrierId)
+            .NotEmpty()
+            .WithMessage("CarrierId is required")
+            .MustAsync(CarrierExists)
+            .WithMessage("Carrier not found");
+    }
+
+    private async Task<bool> CarrierExists(Guid carrierId, CancellationToken ct)
+    {
+        return await _db.Carriers.AnyAsync(c => c.Id == carrierId, ct);
     }
 }
