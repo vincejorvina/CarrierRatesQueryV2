@@ -22,4 +22,12 @@ public class EnableCarrierIntegrationTests : IntegrationTestBase
         var root = await ReadJsonAsync(response);
         GetBoolean(root, "isEnabled").ShouldBeTrue();
     }
+
+    [Fact]
+    public async Task EnableCarrier_WithNonExistentId_ShouldReturn404()
+    {
+        var response = await Client.PatchAsJsonAsync($"/api/v1/carriers/{Guid.NewGuid()}/enable", new { id = Guid.NewGuid() });
+
+        await ShouldHaveStatusAsync(response, HttpStatusCode.NotFound);
+    }
 }

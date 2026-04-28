@@ -15,7 +15,7 @@ public class RejectDisableRequestIntegrationTests : IntegrationTestBase
     public async Task RejectDisableRequest_WithAdminRequest_ShouldReturn200()
     {
         var disableRequest = await GetPendingDisableRequestAsync();
-        var request = CreateRoleRequest(HttpMethod.Patch, $"/api/v1/disable-requests/{disableRequest.Id}/reject", "Admin", "integration-admin");
+        var request = CreateRoleRequest(HttpMethod.Patch, $"/api/v1/disable-requests/{disableRequest.Id}/reject", "Admin", "integration admin");
         request.Content = JsonContent.Create(new { disableRequestId = disableRequest.Id });
 
         var response = await Client.SendAsync(request);
@@ -23,5 +23,16 @@ public class RejectDisableRequestIntegrationTests : IntegrationTestBase
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var root = await ReadJsonAsync(response);
         GetString(root, "status").ShouldBe("Rejected");
+    }
+
+    [Fact]
+    public async Task RejectDisableRequest_WithNonExistentId_ShouldReturn404()
+    {
+        var request = CreateRoleRequest(HttpMethod.Patch, $"/api/v1/disable-requests/{Guid.NewGuid()}/reject", "Admin", "integration admin");
+        request.Content = JsonContent.Create(new { disableRequestId = Guid.NewGuid() });
+
+        var response = await Client.SendAsync(request);
+
+        await ShouldHaveStatusAsync(response, HttpStatusCode.NotFound);
     }
 }

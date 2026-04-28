@@ -21,4 +21,12 @@ public class GetByIdCarrierIntegrationTests : IntegrationTestBase
         var root = await ReadJsonAsync(response);
         GetGuid(root, "id").ShouldBe(carrier.Id);
     }
+
+    [Fact]
+    public async Task GetCarrierById_WithNonExistentId_ShouldReturn404()
+    {
+        var response = await Client.GetAsync($"/api/v1/carriers/{Guid.NewGuid()}");
+
+        await ShouldHaveStatusAsync(response, HttpStatusCode.NotFound);
+    }
 }

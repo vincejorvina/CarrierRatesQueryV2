@@ -20,4 +20,12 @@ public class QueryByCarrierSlugIntegrationTests : IntegrationTestBase
         var root = await ReadJsonAsync(response);
         GetString(root, "carrier").ShouldBe("FedEx");
     }
+
+    [Fact]
+    public async Task QueryRatesByCarrierSlug_WithInvalidSlug_ShouldReturn404()
+    {
+        var response = await Client.PostAsJsonAsync("/api/v1/rates/carrier/slug/invalid-carrier", CreateRateRequest(new { carrierSlug = "invalid-carrier" }));
+
+        await ShouldHaveStatusAsync(response, HttpStatusCode.NotFound);
+    }
 }

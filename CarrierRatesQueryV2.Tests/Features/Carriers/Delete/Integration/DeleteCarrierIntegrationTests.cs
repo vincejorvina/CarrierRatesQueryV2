@@ -19,4 +19,12 @@ public class DeleteCarrierIntegrationTests : IntegrationTestBase
 
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
     }
+
+    [Fact]
+    public async Task DeleteCarrier_WithNonExistentId_ShouldReturn404()
+    {
+        var response = await Client.DeleteAsync($"/api/v1/carriers/{Guid.NewGuid()}");
+
+        await ShouldHaveStatusAsync(response, HttpStatusCode.NotFound);
+    }
 }

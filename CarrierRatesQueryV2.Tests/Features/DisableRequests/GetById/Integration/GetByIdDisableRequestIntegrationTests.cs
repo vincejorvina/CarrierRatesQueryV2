@@ -21,4 +21,12 @@ public class GetByIdDisableRequestIntegrationTests : IntegrationTestBase
         var root = await ReadJsonAsync(response);
         GetGuid(root, "id").ShouldBe(disableRequest.Id);
     }
+
+    [Fact]
+    public async Task GetDisableRequestById_WithNonExistentId_ShouldReturn404()
+    {
+        var response = await Client.GetAsync($"/api/v1/disable-requests/{Guid.NewGuid()}");
+
+        await ShouldHaveStatusAsync(response, HttpStatusCode.NotFound);
+    }
 }

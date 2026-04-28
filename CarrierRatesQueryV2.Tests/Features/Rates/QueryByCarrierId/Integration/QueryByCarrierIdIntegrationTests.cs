@@ -22,4 +22,12 @@ public class QueryByCarrierIdIntegrationTests : IntegrationTestBase
         var root = await ReadJsonAsync(response);
         GetString(root, "carrier").ShouldBe("FedEx");
     }
+
+    [Fact]
+    public async Task QueryRatesByCarrierId_WithNonExistentId_ShouldReturn404()
+    {
+        var response = await Client.PostAsJsonAsync($"/api/v1/rates/carrier/{Guid.NewGuid()}", CreateRateRequest(new { carrierId = Guid.NewGuid() }));
+
+        await ShouldHaveStatusAsync(response, HttpStatusCode.NotFound);
+    }
 }

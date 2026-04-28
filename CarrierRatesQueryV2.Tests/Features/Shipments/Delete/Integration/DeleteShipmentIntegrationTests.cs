@@ -20,4 +20,12 @@ public class DeleteShipmentIntegrationTests : IntegrationTestBase
 
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
     }
+
+    [Fact]
+    public async Task DeleteShipment_WithNonExistentId_ShouldReturn404()
+    {
+        var response = await Client.DeleteAsync($"/api/v1/shipments/{Guid.NewGuid()}");
+
+        await ShouldHaveStatusAsync(response, HttpStatusCode.NotFound);
+    }
 }

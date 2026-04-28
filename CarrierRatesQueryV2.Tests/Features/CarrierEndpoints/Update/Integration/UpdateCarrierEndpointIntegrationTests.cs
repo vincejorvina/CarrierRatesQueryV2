@@ -29,4 +29,20 @@ public class UpdateCarrierEndpointIntegrationTests : IntegrationTestBase
         var root = await ReadJsonAsync(response);
         GetString(root, "endpoint").ShouldBe("https://example.test/v2/rates");
     }
+
+    [Fact]
+    public async Task UpdateCarrierEndpoint_WithNonExistentId_ShouldReturn404()
+    {
+        var carrier = await AddCarrierAsync("Carrier Endpoint Update 2");
+
+        var response = await Client.PutAsJsonAsync($"/api/v1/carriers/{carrier.Id}/endpoints/{Guid.NewGuid()}", new
+        {
+            carrierId = carrier.Id,
+            endpointId = Guid.NewGuid(),
+            operation = "Rates",
+            endpoint = "https://example.test/v2/rates"
+        });
+
+        await ShouldHaveStatusAsync(response, HttpStatusCode.NotFound);
+    }
 }

@@ -22,4 +22,14 @@ public class GetByIdCarrierEndpointIntegrationTests : IntegrationTestBase
         var root = await ReadJsonAsync(response);
         GetGuid(root, "id").ShouldBe(endpoint.Id);
     }
+
+    [Fact]
+    public async Task GetCarrierEndpointById_WithNonExistentId_ShouldReturn404()
+    {
+        var carrier = await GetCarrierByNameAsync("FedEx");
+
+        var response = await Client.GetAsync($"/api/v1/carriers/{carrier.Id}/endpoints/{Guid.NewGuid()}");
+
+        await ShouldHaveStatusAsync(response, HttpStatusCode.NotFound);
+    }
 }

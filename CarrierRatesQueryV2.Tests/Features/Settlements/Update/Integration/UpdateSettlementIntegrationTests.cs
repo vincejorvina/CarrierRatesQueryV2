@@ -23,4 +23,12 @@ public class UpdateSettlementIntegrationTests : IntegrationTestBase
         var root = await ReadJsonAsync(response);
         GetString(root, "status").ShouldBe("Settled");
     }
+
+    [Fact]
+    public async Task UpdateSettlement_WithNonExistentId_ShouldReturn404()
+    {
+        var response = await Client.PatchAsJsonAsync($"/api/v1/settlements/{Guid.NewGuid()}", new { id = Guid.NewGuid(), status = "Settled" });
+
+        await ShouldHaveStatusAsync(response, HttpStatusCode.NotFound);
+    }
 }

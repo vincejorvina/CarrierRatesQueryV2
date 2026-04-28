@@ -16,7 +16,7 @@ public class ApproveDisableRequestIntegrationTests : IntegrationTestBase
     {
         var carrier = await AddCarrierAsync("Carrier Disable Request Approve");
         var disableRequest = await AddDisableRequestAsync(carrier.Id);
-        var request = CreateRoleRequest(HttpMethod.Patch, $"/api/v1/disable-requests/{disableRequest.Id}/approve", "Admin", "integration-admin");
+        var request = CreateRoleRequest(HttpMethod.Patch, $"/api/v1/disable-requests/{disableRequest.Id}/approve", "Admin", "integration admin");
         request.Content = JsonContent.Create(new { disableRequestId = disableRequest.Id });
 
         var response = await Client.SendAsync(request);
@@ -24,5 +24,16 @@ public class ApproveDisableRequestIntegrationTests : IntegrationTestBase
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var root = await ReadJsonAsync(response);
         GetString(root, "status").ShouldBe("Approved");
+    }
+
+    [Fact]
+    public async Task ApproveDisableRequest_WithNonExistentId_ShouldReturn404()
+    {
+        var request = CreateRoleRequest(HttpMethod.Patch, $"/api/v1/disable-requests/{Guid.NewGuid()}/approve", "Admin", "integration admin");
+        request.Content = JsonContent.Create(new { disableRequestId = Guid.NewGuid() });
+
+        var response = await Client.SendAsync(request);
+
+        await ShouldHaveStatusAsync(response, HttpStatusCode.NotFound);
     }
 }

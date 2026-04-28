@@ -23,4 +23,12 @@ public class UpdateShipmentIntegrationTests : IntegrationTestBase
         var root = await ReadJsonAsync(response);
         GetString(root, "status").ShouldBe("Completed");
     }
+
+    [Fact]
+    public async Task UpdateShipment_WithNonExistentId_ShouldReturn404()
+    {
+        var response = await Client.PatchAsJsonAsync($"/api/v1/shipments/{Guid.NewGuid()}", new { id = Guid.NewGuid(), status = "Completed" });
+
+        await ShouldHaveStatusAsync(response, HttpStatusCode.NotFound);
+    }
 }
