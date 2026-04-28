@@ -27,7 +27,7 @@ public class IntegrationTestBase :
         Factory = factory;
     }
     
-    public virtual async Task InitializeAsync()
+public virtual async Task InitializeAsync()
     {
         await IntegrationLock.WaitAsync();
 
