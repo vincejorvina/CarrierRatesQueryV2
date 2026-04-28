@@ -32,15 +32,7 @@ public virtual async Task InitializeAsync()
         await IntegrationLock.WaitAsync();
 
         Client = Factory.CreateClient();
-        
-        using var scope = Factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        
-        await db.Database.EnsureDeletedAsync();
-        await db.Database.EnsureCreatedAsync();
-        new DataSeeder(db).Seed();
-
-        Factory.RefreshSeededCarriers();
+        await Factory.ResetDatabaseAsync();
     }
 
     protected async Task<Carrier> GetCarrierByNameAsync(string name)

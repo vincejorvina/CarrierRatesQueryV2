@@ -13,16 +13,24 @@ namespace CarrierRatesQueryV2.Tests.Infrastructure;
 
 public class TestWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private readonly string _databaseName = $"TestDb_{Guid.NewGuid()}";
-
     public List<Carrier> SeededCarriers { get; private set; } = [];
 
     public void RefreshSeededCarriers()
     {
         using var scope = Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
         SeededCarriers = db.Carriers.Include(c => c.Endpoints).ToList();
+    }
+
+    public async Task ResetDatabaseAsync()
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        
+        await db.Database.EnsureDeletedAsync();
+        await db.Database.EnsureCreatedAsync();
+        new DataSeeder(db).Seed();
+        RefreshSeededCarriers();
     }
     
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -30,9 +38,8 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<DbContextOptions<AppDbContext>>();
-
             services.AddDbContext<AppDbContext>(options =>
-                options.UseInMemoryDatabase(_databaseName));
+                options.UseInMemoryDatabase("TestDb"));
 
             services.RemoveAll<IMockFedExRatesClient>();
             services.RemoveAll<IMockDhlRatesClient>();
@@ -47,17 +54,10 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         {
             using var scope = services.BuildServiceProvider().CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            
-            var seeder = new DataSeeder(db);
-            seeder.Seed();
-            
+            new DataSeeder(db).Seed();
             SeededCarriers = db.Carriers.Include(c => c.Endpoints).ToList();
         });
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        // FastEndpoints keeps test service resolution globally; disposing a factory
-        // can invalidate later endpoint tests in the same process.
-    }
+    protected override void Dispose(bool disposing) { }
 }
