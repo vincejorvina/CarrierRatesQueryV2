@@ -82,12 +82,8 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request>
 
 public sealed class Validator : Validator<Request>
 {
-    private readonly AppDbContext _db;
-
-    public Validator(AppDbContext db)
+    public Validator()
     {
-        _db = db;
-
         RuleFor(r => r.Name)
             .MaximumLength(100)
             .WithMessage("Name must be less than 100 characters.")
@@ -97,7 +93,8 @@ public sealed class Validator : Validator<Request>
 
     private async Task<bool> BeUniqueName(Request req, string name, CancellationToken ct)
     {
-        var exists = await _db.Carriers.AnyAsync(r => r.Name == name && r.Id != req.Id, ct);
+        var db = Resolve<AppDbContext>();
+        var exists = await db.Carriers.AnyAsync(r => r.Name == name && r.Id != req.Id, ct);
         return !exists;
     }
 }

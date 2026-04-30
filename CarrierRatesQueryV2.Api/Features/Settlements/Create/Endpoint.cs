@@ -57,12 +57,8 @@ public sealed class Endpoint(AppDbContext appDbContext) : Endpoint<Request, Resp
 
 public sealed class Validator : Validator<Request>
 {
-    private readonly AppDbContext _db;
-
-    public Validator(AppDbContext db)
+    public Validator()
     {
-        _db = db;
-
         RuleFor(x => x.CarrierId)
             .NotEmpty()
             .WithMessage("CarrierId is required")
@@ -72,6 +68,7 @@ public sealed class Validator : Validator<Request>
 
     private async Task<bool> CarrierExists(Guid carrierId, CancellationToken ct)
     {
-        return await _db.Carriers.AnyAsync(c => c.Id == carrierId, ct);
+        var db = Resolve<AppDbContext>();
+        return await db.Carriers.AnyAsync(c => c.Id == carrierId, ct);
     }
 }

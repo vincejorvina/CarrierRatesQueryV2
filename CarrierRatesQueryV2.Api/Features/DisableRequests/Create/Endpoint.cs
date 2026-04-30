@@ -93,12 +93,10 @@ public sealed class Endpoint(
 
 public sealed class Validator : Validator<Request>
 {
-    private readonly AppDbContext _db;
     private readonly ICarrierManagementService _carrierManagementService;
 
-    public Validator(AppDbContext db, ICarrierManagementService carrierManagementService)
+    public Validator(ICarrierManagementService carrierManagementService)
     {
-        _db = db;
         _carrierManagementService = carrierManagementService;
 
         RuleFor(x => x.Reason)
@@ -112,7 +110,8 @@ public sealed class Validator : Validator<Request>
 
     private async Task<bool> BeAbleToDisableCarrier(Guid carrierId, CancellationToken ct)
     {
-        var (canDisable, _) = await _carrierManagementService.ValidateCanDisableCarrierAsync(carrierId, _db);
+        var db = Resolve<AppDbContext>();
+        var (canDisable, _) = await _carrierManagementService.ValidateCanDisableCarrierAsync(carrierId, db);
         return canDisable;
     }
 }
