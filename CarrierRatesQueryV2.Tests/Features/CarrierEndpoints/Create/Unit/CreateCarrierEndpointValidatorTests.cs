@@ -1,40 +1,42 @@
 using CarrierRatesQueryV2.Api.Features.CarrierEndpoints.Create;
+using CarrierRatesQueryV2.Data.Entities;
+using CarrierRatesQueryV2.Tests.Infrastructure;
 using FluentValidation.TestHelper;
 using Xunit;
 
 namespace CarrierRatesQueryV2.Tests.Features.CarrierEndpoints.Create.Unit;
 
-public class CreateCarrierEndpointValidatorTests
+public class CreateCarrierEndpointValidatorTests : ValidatorTestBase
 {
     [Fact]
-    public void Validate_ValidRequest_ShouldPass()
+    public async Task Validate_ValidRequest_ShouldPass()
     {
-        var validator = new Validator();
+        var (validator, _) = SetupValidator<Validator>();
         var request = new Request(Guid.NewGuid(), "Rates", "https://api.test.com/rates");
 
-        var result = validator.TestValidate(request);
+        var result = await validator.TestValidateAsync(request);
 
         result.ShouldNotHaveAnyValidationErrors();
     }
 
     [Fact]
-    public void Validate_EmptyOperation_ShouldFail()
+    public async Task Validate_EmptyOperation_ShouldFail()
     {
-        var validator = new Validator();
+        var (validator, _) = SetupValidator<Validator>();
         var request = new Request(Guid.NewGuid(), "", "https://api.test.com/rates");
 
-        var result = validator.TestValidate(request);
+        var result = await validator.TestValidateAsync(request);
 
         result.ShouldHaveValidationErrorFor(x => x.Operation);
     }
 
     [Fact]
-    public void Validate_EmptyEndpoint_ShouldFail()
+    public async Task Validate_EmptyEndpoint_ShouldFail()
     {
-        var validator = new Validator();
+        var (validator, _) = SetupValidator<Validator>();
         var request = new Request(Guid.NewGuid(), "Rates", "");
 
-        var result = validator.TestValidate(request);
+        var result = await validator.TestValidateAsync(request);
 
         result.ShouldHaveValidationErrorFor(x => x.Endpoint);
     }

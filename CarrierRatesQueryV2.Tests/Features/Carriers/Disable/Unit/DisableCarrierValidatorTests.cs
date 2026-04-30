@@ -1,27 +1,23 @@
 using CarrierRatesQueryV2.Api.Features.Carriers.Disable;
 using CarrierRatesQueryV2.Api.Services;
-using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Entities;
+using CarrierRatesQueryV2.Tests.Infrastructure;
 using FluentValidation.TestHelper;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace CarrierRatesQueryV2.Tests.Features.Carriers.Disable.Unit;
 
-public class DisableCarrierValidatorTests
+public class DisableCarrierValidatorTests : ValidatorTestBase
 {
-    private static AppDbContext CreateDbContext()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase($"DisableCarrierValidator_{Guid.NewGuid()}")
-            .Options;
-        return new AppDbContext(options);
-    }
-
     [Fact]
     public async Task Validate_ValidRequest_ShouldPass()
     {
-        var db = CreateDbContext();
+        // Arrange
+        var (validator, db) = SetupValidator<Validator>(s =>
+        {
+            s.AddScoped<ICarrierManagementService, CarrierManagementService>();
+        });
         db.Carriers.Add(new Carrier
         {
             Id = Guid.NewGuid(),
@@ -37,21 +33,26 @@ public class DisableCarrierValidatorTests
             CreatedAtUtc = DateTime.UtcNow
         });
         await db.SaveChangesAsync();
-
-        var carrierManagementService = new CarrierManagementService();
-        var validator = new Validator(db, carrierManagementService);
+        
         var carrierId = db.Carriers.First(c => c.Name == "Test Carrier").Id;
         var request = new Request(carrierId, "Test reason");
 
+        // Act
         var result = await validator.TestValidateAsync(request);
 
+        // Assert
         result.ShouldNotHaveAnyValidationErrors();
     }
 
     [Fact]
     public async Task Validate_EmptyReason_ShouldFail()
     {
-        var db = CreateDbContext();
+        // Arrange
+        var (validator, db) = SetupValidator<Validator>(s =>
+        {
+            s.AddScoped<ICarrierManagementService, CarrierManagementService>();
+        });
+        
         db.Carriers.Add(new Carrier
         {
             Id = Guid.NewGuid(),
@@ -61,12 +62,12 @@ public class DisableCarrierValidatorTests
         });
         await db.SaveChangesAsync();
 
-        var carrierManagementService = new CarrierManagementService();
-        var validator = new Validator(db, carrierManagementService);
         var request = new Request(Guid.NewGuid(), "");
 
+        // Act
         var result = await validator.TestValidateAsync(request);
 
+        // Assert
         result.ShouldHaveValidationErrorFor(x => x.Reason)
             .WithErrorMessage("Reason is required");
     }
@@ -74,7 +75,12 @@ public class DisableCarrierValidatorTests
     [Fact]
     public async Task Validate_LastEnabledCarrier_ShouldFail()
     {
-        var db = CreateDbContext();
+        // Arrange
+        var (validator, db) = SetupValidator<Validator>(s =>
+        {
+            s.AddScoped<ICarrierManagementService, CarrierManagementService>();
+        }); 
+        
         var carrierId = Guid.NewGuid();
         db.Carriers.Add(new Carrier
         {
@@ -85,19 +91,24 @@ public class DisableCarrierValidatorTests
         });
         await db.SaveChangesAsync();
 
-        var carrierManagementService = new CarrierManagementService();
-        var validator = new Validator(db, carrierManagementService);
         var request = new Request(carrierId, "Test reason");
 
+        // Act
         var result = await validator.TestValidateAsync(request);
 
+        // Assert
         result.ShouldHaveValidationErrorFor(x => x.Id);
     }
 
     [Fact]
     public async Task Validate_PendingRequestsForOtherCarriers_ShouldFail()
     {
-        var db = CreateDbContext();
+        // Arrange
+        var (validator, db) = SetupValidator<Validator>(s =>
+        {
+            s.AddScoped<ICarrierManagementService, CarrierManagementService>();
+        });
+
         var carrierAId = Guid.NewGuid();
         var carrierBId = Guid.NewGuid();
         var carrierCId = Guid.NewGuid();
@@ -126,19 +137,24 @@ public class DisableCarrierValidatorTests
         });
         await db.SaveChangesAsync();
 
-        var carrierManagementService = new CarrierManagementService();
-        var validator = new Validator(db, carrierManagementService);
         var request = new Request(carrierAId, "Test reason");
 
+        // Act
         var result = await validator.TestValidateAsync(request);
 
+        // Assert
         result.ShouldHaveValidationErrorFor(x => x.Id);
     }
 
     [Fact]
     public async Task Validate_AlreadyDisabledCarrier_ShouldPass()
     {
-        var db = CreateDbContext();
+        // Arrange
+        var (validator, db) = SetupValidator<Validator>(s =>
+        {
+            s.AddScoped<ICarrierManagementService, CarrierManagementService>();
+        });
+
         db.Carriers.Add(new Carrier
         {
             Id = Guid.NewGuid(),
@@ -148,20 +164,25 @@ public class DisableCarrierValidatorTests
         });
         await db.SaveChangesAsync();
 
-        var carrierManagementService = new CarrierManagementService();
-        var validator = new Validator(db, carrierManagementService);
         var carrierId = db.Carriers.First(c => c.Name == "Disabled Carrier").Id;
         var request = new Request(carrierId, "Test reason");
 
+        // Act
         var result = await validator.TestValidateAsync(request);
 
+        // Assert
         result.ShouldNotHaveAnyValidationErrors();
     }
 
     [Fact]
     public async Task Validate_PendingShipment_ShouldFail()
     {
-        var db = CreateDbContext();
+        // Arrange
+        var (validator, db) = SetupValidator<Validator>(s =>
+        {
+            s.AddScoped<ICarrierManagementService, CarrierManagementService>();
+        });
+
         var carrierId = Guid.NewGuid();
         db.Carriers.Add(new Carrier { Id = carrierId, Name = "Test Carrier", IsEnabled = true, CreatedAtUtc = DateTime.UtcNow });
         db.Carriers.Add(new Carrier { Id = Guid.NewGuid(), Name = "Other Carrier", IsEnabled = true, CreatedAtUtc = DateTime.UtcNow });
@@ -174,12 +195,12 @@ public class DisableCarrierValidatorTests
         });
         await db.SaveChangesAsync();
 
-        var carrierManagementService = new CarrierManagementService();
-        var validator = new Validator(db, carrierManagementService);
         var request = new Request(carrierId, "Test reason");
 
+        // Act
         var result = await validator.TestValidateAsync(request);
 
+        // Assert
         result.ShouldHaveValidationErrorFor(x => x.Id);
     }
 }

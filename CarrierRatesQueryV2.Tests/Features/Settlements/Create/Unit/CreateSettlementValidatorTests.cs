@@ -1,61 +1,65 @@
 using CarrierRatesQueryV2.Api.Features.Settlements.Create;
+using CarrierRatesQueryV2.Api.Services;
 using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Entities;
+using CarrierRatesQueryV2.Tests.Infrastructure;
 using FluentValidation.TestHelper;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace CarrierRatesQueryV2.Tests.Features.Settlements.Create;
 
-public class CreateSettlementValidatorTests
+public class CreateSettlementValidatorTests : ValidatorTestBase
 {
-    private static AppDbContext CreateDbContext()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase($"CreateSettlementValidator_{Guid.NewGuid()}")
-            .Options;
-        return new AppDbContext(options);
-    }
-
     [Fact]
     public async Task Validate_ValidRequest_ShouldPass()
     {
-        var db = CreateDbContext();
-        var carrierId = Guid.NewGuid();
-        db.Carriers.Add(new Carrier { Id = carrierId, Name = "Test Carrier", IsEnabled = true, CreatedAtUtc = DateTime.UtcNow });
+        // Arrange
+        var (validator, db) = SetupValidator<Validator>(s =>
+        {
+            s.AddScoped<ICarrierManagementService, CarrierManagementService>();
+        });
+        var carrier = new Carrier { Id = Guid.NewGuid(), Name = "Test Carrier", IsEnabled = true, CreatedAtUtc = DateTime.UtcNow };
+        db.Carriers.Add(carrier);
         await db.SaveChangesAsync();
+        var carrierId = carrier.Id;
 
-        var validator = new Validator(db);
         var request = new Request(carrierId);
 
+        // Act
         var result = await validator.TestValidateAsync(request);
 
+        // Assert
         result.ShouldNotHaveAnyValidationErrors();
     }
 
     [Fact]
     public async Task Validate_EmptyCarrierId_ShouldFail()
     {
-        var db = CreateDbContext();
+        // Arrange
+        var (validator, _) = SetupValidator<Validator>();
         
-        var validator = new Validator(db);
         var request = new Request(Guid.Empty);
 
+        // Act
         var result = await validator.TestValidateAsync(request);
 
+        // Assert
         result.ShouldHaveValidationErrorFor(x => x.CarrierId);
     }
 
     [Fact]
     public async Task Validate_CarrierNotFound_ShouldFail()
     {
-        var db = CreateDbContext();
+        // Arrange
+        var (validator, _) = SetupValidator<Validator>();
         
-        var validator = new Validator(db);
         var request = new Request(Guid.NewGuid());
 
+        // Act
         var result = await validator.TestValidateAsync(request);
 
+        // Assert
         result.ShouldHaveValidationErrorFor(x => x.CarrierId);
     }
 }

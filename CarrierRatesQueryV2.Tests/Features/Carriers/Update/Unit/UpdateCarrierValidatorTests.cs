@@ -1,48 +1,40 @@
-using System;
-using System.Threading.Tasks;
 using CarrierRatesQueryV2.Api.Features.Carriers.Update;
 using CarrierRatesQueryV2.Data;
 using CarrierRatesQueryV2.Data.Entities;
+using CarrierRatesQueryV2.Tests.Infrastructure;
 using FluentValidation.TestHelper;
-using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace CarrierRatesQueryV2.Tests.Features.Carriers.Update.Unit;
 
-public class UpdateCarrierValidatorTests
+public class UpdateCarrierValidatorTests : ValidatorTestBase
 {
-    private static AppDbContext CreateDbContext()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase($"UpdateCarrierValidator_{Guid.NewGuid()}")
-            .Options;
-        return new AppDbContext(options);
-    }
-
     [Fact]
     public async Task Validate_ValidRequest_ShouldPass()
     {
-        var db = CreateDbContext();
-        db.Carriers.Add(new Carrier { Id = Guid.NewGuid(), Name = "Existing", IsEnabled = true, CreatedAtUtc = DateTime.UtcNow });
-        await db.SaveChangesAsync();
+        // Arrange
+        var (validator, _) = SetupValidator<Validator>();
 
-        var validator = new Validator(db);
         var request = new Request(Guid.NewGuid(), "New Name", null);
 
+        // Act
         var result = await validator.TestValidateAsync(request);
 
+        // Assert
         result.ShouldNotHaveAnyValidationErrors();
     }
 
     [Fact]
     public async Task Validate_TooLongName_ShouldFail()
     {
-        var db = CreateDbContext();
-        var validator = new Validator(db);
+        // Arrange
+        var (validator, _) = SetupValidator<Validator>();
         var request = new Request(Guid.NewGuid(), new string('a', 101), null);
 
+        // Act
         var result = await validator.TestValidateAsync(request);
 
+        // Assert
         result.ShouldHaveValidationErrorFor(x => x.Name)
             .WithErrorMessage("Name must be less than 100 characters.");
     }
@@ -50,15 +42,17 @@ public class UpdateCarrierValidatorTests
     [Fact]
     public async Task Validate_DuplicateName_ShouldFail()
     {
-        var db = CreateDbContext();
+        // Arrange
+        var (validator, db) = SetupValidator<Validator>();
         db.Carriers.Add(new Carrier { Id = Guid.NewGuid(), Name = "Existing Carrier", IsEnabled = true, CreatedAtUtc = DateTime.UtcNow });
         await db.SaveChangesAsync();
 
-        var validator = new Validator(db);
         var request = new Request(Guid.NewGuid(), "Existing Carrier", null);
 
+        // Act
         var result = await validator.TestValidateAsync(request);
 
+        // Assert
         result.ShouldHaveValidationErrorFor(x => x.Name)
             .WithErrorMessage("Name must be unique.");
     }
@@ -66,16 +60,18 @@ public class UpdateCarrierValidatorTests
     [Fact]
     public async Task Validate_SameNameAsCurrent_ShouldPass()
     {
-        var db = CreateDbContext();
+        // Arrange
+        var (validator, db) = SetupValidator<Validator>();
         var existingId = Guid.NewGuid();
         db.Carriers.Add(new Carrier { Id = existingId, Name = "Test Carrier", IsEnabled = true, CreatedAtUtc = DateTime.UtcNow });
         await db.SaveChangesAsync();
 
-        var validator = new Validator(db);
         var request = new Request(existingId, "Test Carrier", null);
 
+        // Act
         var result = await validator.TestValidateAsync(request);
 
+        // Assert
         result.ShouldNotHaveAnyValidationErrors();
     }
 }
